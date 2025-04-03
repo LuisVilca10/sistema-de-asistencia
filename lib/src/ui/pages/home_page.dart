@@ -29,7 +29,6 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
-    final size = MediaQuery.of(context).size;
     return ScaffoldMessenger(
       key: homePageMessengerKey,
       child: Stack(
@@ -43,20 +42,16 @@ class _HomePageState extends State<HomePage>
             backgroundColor: theme.background(),
             appBar: AppBar(
               automaticallyImplyLeading: false,
-              backgroundColor: Colors.transparent,
+              backgroundColor: Colors.blue,
               elevation: 0,
               leading: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(Icons.arrow_back_ios, color: fontColor()),
+                onPressed: () => {},
+                icon: Icon(Icons.menu, color: fontColor()),
               ),
               actions: [
                 IconButton(
-                  onPressed: () => {},
-                  icon: Icon(CupertinoIcons.search, color: fontColor()),
-                ),
-                IconButton(
                   onPressed: () {},
-                  icon: Icon(CupertinoIcons.delete_simple, color: fontColor()),
+                  icon: Icon(CupertinoIcons.info_circle, color: fontColor()),
                 ),
                 /*IconButton(
                   onPressed: () {
@@ -69,7 +64,7 @@ class _HomePageState extends State<HomePage>
                 )*/
               ],
             ),
-            // body: _Body(),
+            body: _Body(),
           ),
           // Transform.translate(
           //   offset: Offset(
@@ -89,20 +84,55 @@ class _HomePageState extends State<HomePage>
 }
 
 // ignore: must_be_immutable
-// class _Body extends StatefulWidget {
-//   _Body({super.key});
+class _Body extends StatefulWidget {
+  const _Body({super.key});
 
-//   @override
-//   State<_Body> createState() => _BodyState();
-// }
+  @override
+  State<_Body> createState() => _BodyState();
+}
 
-// class _BodyState extends State<_Body> {
-//   FirebaseServices _services = FirebaseServices.instance;
+class _BodyState extends State<_Body> {
+  List<dynamic> notes = [];
 
-//   List<dynamic> notes = [];
+  Widget _image() {
+    return Container(
+      height: 100.0,
+      width: double.infinity,
+      margin: EdgeInsets.only(left: 30, right: 30, top: 90),
+      decoration: BoxDecoration(
+        image: DecorationImage(image: AssetImage("assets/logougel.png")),
+      ),
+    );
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Scaffold(
+          backgroundColor: ThemeController.instance.background(),
+          body: SizedBox(
+            height: double.infinity,
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _image(),
+                SizedBox(height: 20),
+                Container(
+                  margin: EdgeInsets.only(left: 20, right: 20),
+                  child: Text(
+                    "Presione el boton (+) para registrar un evento o reunión",
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 //     return Column(
 //       children: [
 //         AppBar(
@@ -199,5 +229,5 @@ class _HomePageState extends State<HomePage>
 //         ),
 //       ],
 //     );
-//   }
+
 // }

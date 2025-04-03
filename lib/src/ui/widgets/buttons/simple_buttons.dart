@@ -23,7 +23,7 @@ class MediumButton extends StatelessWidget {
   Color getColorText() {
     if (!this.primaryColor) return Colors.black;
     return !ThemeController.instance.brightnessValue
-        ? Colors.black
+        ? Colors.white
         : Colors.white;
   }
 

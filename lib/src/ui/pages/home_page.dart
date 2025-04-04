@@ -36,8 +36,8 @@ class _HomePageState extends State<HomePage>
           Scaffold(
             floatingActionButton: FloatingActionButton(
               backgroundColor: theme.primary(),
-              onPressed: () => {},
-              child: Icon(Icons.add, size: 25),
+              onPressed: () => _dialogBuilder(context),
+              child: Icon(Icons.add, size: 25, color: Colors.white),
             ),
             backgroundColor: theme.background(),
             appBar: AppBar(
@@ -66,21 +66,54 @@ class _HomePageState extends State<HomePage>
             ),
             body: _Body(),
           ),
-          // Transform.translate(
-          //   offset: Offset(
-          //     0,
-          //     size.height + 100 - (size.height * _controller.value),
-          //   ),
-          //   child: CustomBottomSheet(
-          //     close: () {
-          //       _controller.close();
-          //     },
-          //   ),
-          // ),
         ],
       ),
     );
   }
+}
+
+Future<void> _dialogBuilder(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: ThemeController.instance.background(),
+        title: const Text('Crear Nuevo'),
+        content: const TextField(
+          cursorColor: Colors.black54,
+          decoration: InputDecoration(
+            labelText: "Crear Evento o Reunión",
+            labelStyle: TextStyle(
+              color: Colors.black54, // Cambia el color de la etiqueta
+            ),
+            border: OutlineInputBorder(),
+            hintStyle: TextStyle(color: Colors.grey),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.blue),
+            ),
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.labelLarge,
+            ),
+            child: const Text('Cancelar'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            style: TextButton.styleFrom(
+              textStyle: Theme.of(context).textTheme.labelLarge,
+            ),
+            child: const Text('Crear'),
+            onPressed: () {},
+          ),
+        ],
+      );
+    },
+  );
 }
 
 // ignore: must_be_immutable
@@ -133,101 +166,3 @@ class _BodyState extends State<_Body> {
     );
   }
 }
-//     return Column(
-//       children: [
-//         AppBar(
-//           automaticallyImplyLeading: false,
-//           backgroundColor: Colors.transparent,
-//           elevation: 0,
-//           title: Text(
-//             "Notas",
-//             style: TextStyle(color: fontColor(), fontWeight: FontWeight.bold),
-//           ),
-//         ),
-//         Expanded(
-//           child: FutureBuilder(
-//             future: _services.read("notes"),
-//             builder: (context, snapshot) {
-//               if (snapshot.hasError) {
-//                 return StatusMessage(() async {
-//                   await _services.read("notes");
-//                 }, StatusNetwork.Exception);
-//               }
-//               if (!snapshot.hasData) {
-//                 return Container();
-//               } else {
-//                 Map<String, dynamic> response =
-//                     snapshot.data as Map<String, dynamic>;
-//                 if (response["status"] == StatusNetwork.Connected) {
-//                   notes = response["data"];
-//                   return StaggeredGridView.countBuilder(
-//                     physics: BouncingScrollPhysics(),
-//                     crossAxisCount: 2,
-//                     itemCount: notes.length,
-//                     itemBuilder: (context, index) {
-//                       Note nota;
-//                       if (notes[index].type == TypeNote.Text) {
-//                         nota = notes[index];
-//                         return SimpleCard(
-//                           nota = notes[index],
-//                           onTap: () {
-//                             print("Tipo de nota: ${nota.type}");
-
-//                             Navigator.pushNamed(
-//                               context,
-//                               NotePage.NOTE_PAGE_ROUTE,
-//                               arguments: NotePageArguments(note: nota),
-//                             );
-//                           },
-//                         );
-//                       }
-//                       ;
-//                       if (notes[index].type == TypeNote.Image) {
-//                         nota = notes[index];
-//                         return ImageCard(
-//                           nota = notes[index],
-//                           onTap: () {
-//                             print("Tipo de nota: ${nota.type}");
-
-//                             Navigator.pushNamed(
-//                               context,
-//                               NotePage.NOTE_PAGE_ROUTE,
-//                               arguments: NotePageArguments(note: nota),
-//                             );
-//                           },
-//                         );
-//                       }
-//                       if (notes[index].type == TypeNote.TextImage) {
-//                         nota = notes[index];
-//                         return TextImageCard(
-//                           nota = notes[index],
-//                           onTap: () {
-//                             print("Tipo de nota: ${nota.type}");
-
-//                             Navigator.pushNamed(
-//                               context,
-//                               NotePage.NOTE_PAGE_ROUTE,
-//                               arguments: NotePageArguments(note: nota),
-//                             );
-//                           },
-//                         );
-//                       }
-//                       return Container();
-//                     },
-//                     staggeredTileBuilder:
-//                         (int index) =>
-//                             new StaggeredTile.count(1, index.isEven ? 1 : 1.3),
-//                     mainAxisSpacing: 1,
-//                     crossAxisSpacing: 1.0,
-//                   );
-//                 } else {
-//                   return StatusMessage(() async {}, StatusNetwork.Exception);
-//                 }
-//               }
-//             },
-//           ),
-//         ),
-//       ],
-//     );
-
-// }

@@ -37,6 +37,10 @@ dependencies:
   shared_preferences: ^2.5.3
   google_fonts: ^6.2.1
   animate_do: ^4.2.0
+  json_annotation: ^4.9.0
+  dio: ^5.8.0+1
+  pretty_dio_logger: ^1.4.0
+  retrofit: ^4.4.2
 
 dev_dependencies:
   flutter_test:

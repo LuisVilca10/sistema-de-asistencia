@@ -6,7 +6,7 @@ class Configure {
   static const AUXILIAR = Color(0xFFDFDFC9);
   static const ACCENT = Color(0xFF063647);
 
-  static const PRIMARY_DARK = Color(0xFFA55C55);
+  static const PRIMARY_DARK = Color.fromARGB(255, 19, 145, 188);
 
   static const PRIMARY_BUTTON_LIGHT = Color(0xFF222222);
   static const SECONDARY_BUTTON_LIGHT = Color(0xFFECE6E1);

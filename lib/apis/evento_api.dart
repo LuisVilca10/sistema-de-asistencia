@@ -6,28 +6,42 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:retrofit/http.dart';
 
 part 'evento_api.g.dart';
-@RestApi(baseUrl: UrlApi.urlApix)
-abstract class AsistenciaApi {
-  factory AsistenciaApi(Dio dio, {String baseUrl}) = _AsistenciaApi;
 
-  static AsistenciaApi create() {
+@RestApi(baseUrl: UrlApi.urlApix)
+abstract class EventoApi {
+  factory EventoApi(Dio dio, {String baseUrl}) = _EventoApi;
+
+  static EventoApi create() {
     final dio = Dio();
     dio.interceptors.add(PrettyDioLogger());
-    return AsistenciaApi(dio);
+    return EventoApi(dio);
   }
 
   @GET("/envento/list")
-  Future<List<AsistenciaModelo>> getAsistencia(@Header("Authorization") String token);
+  Future<List<EventoModelo>> getEvento(@Header("Authorization") String token);
 
-  // @POST("/finca/crear")
-  // Future<AsistenciaModelo> crearFinca(@Header("Authorization") String token, @Body() AsistenciaModelo finca);
+  @POST("/finca/crear")
+  Future<EventoModelo> crearEvento(
+    @Header("Authorization") String token,
+    @Body() EventoModelo finca,
+  );
 
-  // @GET("/finca/buscar/{id}")
-  // Future<AsistenciaModelo> findFinca(@Header("Authorization") String token, @Path("id") int id);
+  @GET("/finca/buscar/{id}")
+  Future<EventoModelo> findEvento(
+    @Header("Authorization") String token,
+    @Path("id") int id,
+  );
 
-  // @DELETE("/finca/eliminar/{id}")
-  // Future<GenericModelo> deleteFinca(@Header("Authorization") String token, @Path("id") int id);
+  @DELETE("/finca/eliminar/{id}")
+  Future<GenericModelo> deleteEvento(
+    @Header("Authorization") String token,
+    @Path("id") int id,
+  );
 
-  // @PUT("/finca/editar/{id}")
-  // Future<AsistenciaModelo> updateFinca(@Header("Authorization") String token, @Path("id") int id , @Body() AsistenciaModelo finca);
+  @PUT("/finca/editar/{id}")
+  Future<EventoModelo> updateEvento(
+    @Header("Authorization") String token,
+    @Path("id") int id,
+    @Body() EventoModelo finca,
+  );
 }

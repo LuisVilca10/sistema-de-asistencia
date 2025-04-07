@@ -1,7 +1,7 @@
 part of 'evento_api.dart';
 
-class _AsistenciaApi implements AsistenciaApi {
-  _AsistenciaApi(this._dio, {this.baseUrl}) {
+class _EventoApi implements EventoApi {
+  _EventoApi(this._dio, {this.baseUrl}) {
     baseUrl ??= 'http://localhost/api.php';
   }
 
@@ -10,14 +10,14 @@ class _AsistenciaApi implements AsistenciaApi {
   String? baseUrl;
 
   @override
-  Future<List<AsistenciaModelo>> getAsistencia(String token) async {
+  Future<List<EventoModelo>> getEvento(String token) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);
     final Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<List<dynamic>>(
-      _setStreamType<List<AsistenciaModelo>>(
+      _setStreamType<List<EventoModelo>>(
         Options(method: 'GET', headers: _headers, extra: _extra)
             .compose(
               _dio.options,
@@ -32,25 +32,25 @@ class _AsistenciaApi implements AsistenciaApi {
         _result.data!
             .map(
               (dynamic i) =>
-                  AsistenciaModelo.fromJson(i as Map<String, dynamic>),
+                  EventoModelo.fromJson(i as Map<String, dynamic>),
             )
             .toList();
     return value;
   }
 
   @override
-  Future<AsistenciaModelo> crearAsistencia(
+  Future<EventoModelo> crearEvento(
     String token,
-    AsistenciaModelo asistencia,
+    EventoModelo evento,
   ) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
-    _data.addAll(asistencia.toJson());
+    _data.addAll(evento.toJson());
     final _result = await _dio.fetch<Map<String, dynamic>>(
-      _setStreamType<AsistenciaModelo>(
+      _setStreamType<EventoModelo>(
         Options(method: 'POST', headers: _headers, extra: _extra)
             .compose(
               _dio.options,
@@ -61,19 +61,19 @@ class _AsistenciaApi implements AsistenciaApi {
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl),
       ),
     );
-    final value = AsistenciaModelo.fromJson(_result.data!);
+    final value = EventoModelo.fromJson(_result.data!);
     return value;
   }
 
   @override
-  Future<AsistenciaModelo> findAsistencia(String token, int id) async {
+  Future<EventoModelo> findEvento(String token, int id) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);
     final Map<String, dynamic>? _data = null;
     final _result = await _dio.fetch<Map<String, dynamic>>(
-      _setStreamType<AsistenciaModelo>(
+      _setStreamType<EventoModelo>(
         Options(method: 'GET', headers: _headers, extra: _extra)
             .compose(
               _dio.options,
@@ -84,12 +84,12 @@ class _AsistenciaApi implements AsistenciaApi {
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl),
       ),
     );
-    final value = AsistenciaModelo.fromJson(_result.data!);
+    final value = EventoModelo.fromJson(_result.data!);
     return value;
   }
 
   @override
-  Future<GenericModelo> deleteAsistencia(String token, int id) async {
+  Future<GenericModelo> deleteEvento(String token, int id) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'Authorization': token};
@@ -112,19 +112,19 @@ class _AsistenciaApi implements AsistenciaApi {
   }
 
   @override
-  Future<AsistenciaModelo> updateAsisstencia(
+  Future<EventoModelo> updateEvento(
     String token,
     int id,
-    AsistenciaModelo asistencia,
+    EventoModelo evento,
   ) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'Authorization': token};
     _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
-    _data.addAll(asistencia.toJson());
+    _data.addAll(evento.toJson());
     final _result = await _dio.fetch<Map<String, dynamic>>(
-      _setStreamType<AsistenciaModelo>(
+      _setStreamType<EventoModelo>(
         Options(method: 'PUT', headers: _headers, extra: _extra)
             .compose(
               _dio.options,
@@ -135,7 +135,7 @@ class _AsistenciaApi implements AsistenciaApi {
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl),
       ),
     );
-    final value = AsistenciaModelo.fromJson(_result.data!);
+    final value = EventoModelo.fromJson(_result.data!);
     return value;
   }
 

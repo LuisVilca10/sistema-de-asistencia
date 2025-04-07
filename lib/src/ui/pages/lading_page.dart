@@ -26,6 +26,9 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage>
     with SingleTickerProviderStateMixin {
+  final TextEditingController _nombreController = TextEditingController();
+  final TextEditingController _correoController = TextEditingController();
+  final TextEditingController _dniController = TextEditingController();
   Widget _image() {
     return Container(
       height: 100.0,
@@ -34,7 +37,7 @@ class _LandingPageState extends State<LandingPage>
         left: 20,
         right: 20,
         top: 90,
-        bottom: 30
+        bottom: 30,
       ), // Ajusta la altura según lo que necesites
       decoration: BoxDecoration(
         image: DecorationImage(
@@ -85,6 +88,7 @@ class _LandingPageState extends State<LandingPage>
                       margin: EdgeInsets.only(left: 1),
                       padding: EdgeInsets.all(8.0),
                       child: TextField(
+                        controller: _nombreController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Nombre Y Apellido Completo',
@@ -100,6 +104,7 @@ class _LandingPageState extends State<LandingPage>
                       margin: EdgeInsets.only(left: 1),
                       padding: EdgeInsets.all(8.0),
                       child: TextField(
+                        controller: _correoController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           labelText: 'Correo Electronico',
@@ -115,6 +120,7 @@ class _LandingPageState extends State<LandingPage>
                       margin: EdgeInsets.only(left: 1),
                       padding: EdgeInsets.all(8.0),
                       child: TextField(
+                        controller: _dniController,
                         keyboardType: TextInputType.number,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),

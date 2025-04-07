@@ -1,10 +1,10 @@
 class UsuarioModelo {
-  String nombre, correo, dni;
+  String? nombre, correo, dni;
 
   UsuarioModelo({
-    required this.nombre,
-    required this.correo,
-    required this.dni,
+     this.nombre,
+     this.correo,
+     this.dni,
   });
 
   factory UsuarioModelo.fromJson(Map<String, dynamic> map) {

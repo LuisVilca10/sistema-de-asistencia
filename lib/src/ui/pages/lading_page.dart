@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/apis/persona_api.dart';
+import 'package:flutter_application_1/modelo/UsuarioModelo.dart';
 import 'package:flutter_application_1/src/core/controllers/theme_controller.dart';
 // import 'package:flutter_application_1/src/core/services/preferences_service.dart';
 import 'package:flutter_application_1/src/ui/pages/home_page.dart';
 import 'package:flutter_application_1/src/ui/widgets/buttons/simple_buttons.dart';
 import 'package:flutter_application_1/src/ui/widgets/loading_widget/loading_widget.dart';
 import 'package:flutter_application_1/src/ui/widgets/loading_widget/loading_widget_controller.dart';
+import 'package:flutter_application_1/util/TokenUtil.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 GlobalKey<ScaffoldState> landingPageKey = GlobalKey<ScaffoldState>();
 GlobalKey<ScaffoldMessengerState> landingPageMessengerKey =
@@ -29,6 +34,7 @@ class _LandingPageState extends State<LandingPage>
   final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _correoController = TextEditingController();
   final TextEditingController _dniController = TextEditingController();
+  var token;
   Widget _image() {
     return Container(
       height: 100.0,
@@ -140,13 +146,32 @@ class _LandingPageState extends State<LandingPage>
                         title: "Ingresar",
 
                         onTap: () async {
-                          LoadingWidgetController.instance.loading();
-                          // await initMethods();
-                          LoadingWidgetController.instance.close();
-                          Navigator.pushNamed(
+                          final prefs = await SharedPreferences.getInstance();
+                          final api = Provider.of<PersonaApi>(
                             context,
-                            HomePage.HOME_PAGE_ROUTE,
+                            listen: false,
                           );
+                          final user = UsuarioModelo();
+                          user.correo = _correoController.text;
+                          user.nombre = _nombreController.text;
+                          user.dni = _dniController.text;
+                          bool ingreso = false;
+                          api.login(user).then((value) {
+                            print("TOKEN: $token");
+                            token = value.token_type + " " + value.access_token;
+                            prefs.setString("token", token);
+                            TokenUtil.TOKEN = token;
+                            ingreso = true;
+                            if (ingreso == true) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return HomePage();
+                                  },
+                                ),
+                              );
+                            }
+                          });
                         },
                       ),
                     ),

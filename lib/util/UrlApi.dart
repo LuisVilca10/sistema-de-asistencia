@@ -1,4 +1,4 @@
 class UrlApi {
   UrlApi._();
-  static const String urlApix = "http://localhost/api.php";
+  static const String urlApix = "http://localhost/sis-asis/api.php";
 }

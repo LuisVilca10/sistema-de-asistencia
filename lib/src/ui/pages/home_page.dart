@@ -118,8 +118,8 @@ Future<void> _dialogBuilder(BuildContext context) {
 
 // ignore: must_be_immutable
 class _Body extends StatefulWidget {
-  const _Body({super.key});
-
+  // const _Body({super.key});
+const _Body();
   @override
   State<_Body> createState() => _BodyState();
 }

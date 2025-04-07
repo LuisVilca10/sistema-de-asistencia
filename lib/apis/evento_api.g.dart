@@ -2,7 +2,7 @@ part of 'evento_api.dart';
 
 class _EventoApi implements EventoApi {
   _EventoApi(this._dio, {this.baseUrl}) {
-    baseUrl ??= 'http://localhost/api.php';
+    baseUrl ??= 'http://localhost/sis-asis/api.php';
   }
 
   final Dio _dio;
@@ -31,18 +31,14 @@ class _EventoApi implements EventoApi {
     var value =
         _result.data!
             .map(
-              (dynamic i) =>
-                  EventoModelo.fromJson(i as Map<String, dynamic>),
+              (dynamic i) => EventoModelo.fromJson(i as Map<String, dynamic>),
             )
             .toList();
     return value;
   }
 
   @override
-  Future<EventoModelo> crearEvento(
-    String token,
-    EventoModelo evento,
-  ) async {
+  Future<EventoModelo> crearEvento(String token, EventoModelo evento) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{r'Authorization': token};

@@ -2,7 +2,7 @@
 require_once 'vendor/autoload.php';
 use \Firebase\JWT\JWT;
 
-$secretKey = 'your-secret-key';  // Cambia esto por una clave secreta única y segura
+$secretKey = 'My-secret-key-UGEL';  // Cambia esto por una clave secreta única y segura
 
 if (isset($_REQUEST["dni"]) && isset($_REQUEST["nombre"]) && isset($_REQUEST["correo"])) {
     $dni = isset($_REQUEST["dni"]) ? trim($_REQUEST["dni"]) : false;

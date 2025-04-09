@@ -16,7 +16,7 @@ abstract class PersonaApi {
     dio.interceptors.add(PrettyDioLogger());
     return PersonaApi(dio);
   }
-  @POST("/api/auth/login") 
+  @POST("http://localhost/sis-asis/api.php") 
   Future<TokenModelo> login(@Body() UsuarioModelo usuario);
 
   @GET("/api/persona")

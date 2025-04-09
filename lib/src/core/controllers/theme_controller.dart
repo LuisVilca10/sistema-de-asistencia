@@ -24,7 +24,7 @@ class ThemeController {
   Color secondaryButton() => Configure.SECONDARY_BUTTON_LIGHT;
 
   Color background() =>
-      brightnessValue ? Configure.BACKGROUND_DARK : Configure.BACKGROUND_LIGHT;
+      brightnessValue ? Configure.BACKGROUND_LIGHT : Configure.BACKGROUND_DARK;
 
   void changeTheme() async {
     brightness.value = !brightness.value;

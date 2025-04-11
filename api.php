@@ -1,49 +1,80 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Content-Type: application/json");
+
 require_once 'vendor/autoload.php';
 use \Firebase\JWT\JWT;
 
-$secretKey = 'My-secret-key-UGEL';  // Cambia esto por una clave secreta única y segura
+$secretKey = '3st0y-S3gurO-4Qu1';
+$rawInput = file_get_contents("php://input");
+$data = json_decode($rawInput, true);
 
-if (isset($_REQUEST["dni"]) && isset($_REQUEST["nombre"]) && isset($_REQUEST["correo"])) {
-    $dni = isset($_REQUEST["dni"]) ? trim($_REQUEST["dni"]) : false;
-    $nombre = isset($_REQUEST["nombre"]) ? trim($_REQUEST["nombre"]) : false;
-    $correo = isset($_REQUEST["correo"]) ? trim($_REQUEST["correo"]) : false;
+// Verificar que los parámetros requeridos existen
+if (isset($data["nombre"]) && isset($data["correo"]) && isset($data["dni"])) {
+    $nombre = $data["nombre"];
+    $correo = $data["correo"];
+    $dni = $data["dni"];
 
     // Lista de administradores (ejemplo de dni admin)
-    $ad = array("02416492", "42729761", "02445278", "02045892");
+    $ad = array(
+		"02416492", 
+		"42729761",
+		"02445278",
+		"02045892",
+		"02430689",
+		"02045304",
+		"02412446",
+		"02145647",
+		"02173801",
+		"02435472",
+		"43989847",
+		"88888888",
+		"99999999"
+	);
 
     // Conexión a la base de datos
-    @$db = new mysqli("localhost", "root", "", "metodica_maestro");
-    if ($db->connect_errno != null) {
-        $a = array('status' => 0, 'message' => 'Error en base de datos: ' . $db->connect_error);
-        echo json_encode($a);
+    $db = @new mysqli("localhost", "root", "", "metodica_maestro");
+    if ($db->connect_errno) {
+        echo json_encode([
+            'status' => 0,
+            'message' => 'Error en base de datos: ' . $db->connect_error
+        ]);
         exit();
     }
 
-    // Verificación si el DNI es de un administrador
+    // Verificar si el DNI es de un administrador
     if (in_array($dni, $ad)) {
-        // Aquí puedes personalizar lo que desees incluir en el payload del JWT
-        $payload = array(
+        // Construir payload del token
+        $payload = [
             "dni" => $dni,
             "nombre" => $nombre,
             "correo" => $correo,
-            "iat" => time() // Hora de emisión
-            // No agregamos el campo "exp" para que el token no expire nunca
-        );
+            "iat" => time() // Tiempo de emisión
+            // No se incluye "exp" para token sin expiración
+        ];
 
-        // Generar el token JWT
-        $jwt = JWT::encode($payload, $secretKey,'HS256');
+        // Generar JWT
+        $jwt = JWT::encode($payload, $secretKey, 'HS256');
 
         // Responder con el token
-        $a = array('status' => 1, 'message' => 'Login exitoso', 'token' => $jwt);
-        echo json_encode($a); // Respuesta con el token
+        echo json_encode([
+            'status' => 1,
+            'message' => 'Login exitoso',
+            'token' => $jwt
+        ]);
     } else {
-        $a = array('status' => 0, 'message' => 'No eres un administrador.');
-        echo json_encode($a); // Respuesta de error
+        echo json_encode([
+            'status' => 0,
+            'message' => 'No eres un administrador.'
+        ]);
     }
 } else {
-    $a = array('status' => 0, 'message' => 'Faltan parámetros (dni, nombre, correo)');
-    echo json_encode($a);
+    echo json_encode([
+        'status' => 0,
+        'message' => 'Faltan parámetros (dni, nombre, correo)'
+    ]);
 }
 
 if(isset($_REQUEST["dni"])){

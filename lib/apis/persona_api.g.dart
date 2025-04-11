@@ -12,7 +12,7 @@ class _PersonaApi implements PersonaApi {
   Future<TokenModelo> login(user) async {
     final _data = <String, dynamic>{}..addAll(user.toJson());
     final response = await _dio!.request<Map<String, dynamic>>(
-      'http://localhost/sis-asis/api.php',
+      '/sis-asis/api.php',
       data: _data,
       options: Options(
         method: 'POST',

@@ -73,25 +73,121 @@ class _HomePageState extends State<HomePage>
 }
 
 Future<void> _dialogBuilder(BuildContext context) {
+  TextEditingController nombreController = TextEditingController();
+  TextEditingController fechaHoraInicioController = TextEditingController();
+  TextEditingController fechaHoraFinController = TextEditingController();
+
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
         backgroundColor: ThemeController.instance.background(),
         title: const Text('Crear Nuevo'),
-        content: const TextField(
-          cursorColor: Colors.black54,
-          decoration: InputDecoration(
-            labelText: "Crear Evento o Reunión",
-            labelStyle: TextStyle(
-              color: Colors.black54, // Cambia el color de la etiqueta
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            // Nombre del evento
+            TextField(
+              controller: nombreController,
+              cursorColor: Colors.black54,
+              decoration: InputDecoration(
+                labelText: "Nombre del evento",
+                labelStyle: TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(),
+                hintStyle: TextStyle(color: Colors.grey),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+              ),
             ),
-            border: OutlineInputBorder(),
-            hintStyle: TextStyle(color: Colors.grey),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.blue),
+            SizedBox(height: 10),
+
+            // Fecha y hora de inicio
+            TextField(
+              controller: fechaHoraInicioController,
+              readOnly: true,
+              cursorColor: Colors.black54,
+              decoration: InputDecoration(
+                labelText: "Fecha y Hora de Inicio",
+                labelStyle: TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(),
+                hintStyle: TextStyle(color: Colors.grey),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+              ),
+              onTap: () async {
+                DateTime? selectedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2101),
+                );
+                if (selectedDate != null) {
+                  TimeOfDay? selectedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+                  if (selectedTime != null) {
+                    final dateTime = DateTime(
+                      selectedDate.year,
+                      selectedDate.month,
+                      selectedDate.day,
+                      selectedTime.hour,
+                      selectedTime.minute,
+                    );
+                    fechaHoraInicioController.text = dateTime
+                        .toString()
+                        .substring(0, 16); // yyyy-MM-dd HH:mm
+                  }
+                }
+              },
             ),
-          ),
+            SizedBox(height: 10),
+
+            // Fecha y hora de fin
+            TextField(
+              controller: fechaHoraFinController,
+              readOnly: true,
+              cursorColor: Colors.black54,
+              decoration: InputDecoration(
+                labelText: "Fecha y Hora de Fin",
+                labelStyle: TextStyle(color: Colors.black54),
+                border: OutlineInputBorder(),
+                hintStyle: TextStyle(color: Colors.grey),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+              ),
+              onTap: () async {
+                DateTime? selectedDate = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2101),
+                );
+                if (selectedDate != null) {
+                  TimeOfDay? selectedTime = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.now(),
+                  );
+                  if (selectedTime != null) {
+                    final dateTime = DateTime(
+                      selectedDate.year,
+                      selectedDate.month,
+                      selectedDate.day,
+                      selectedTime.hour,
+                      selectedTime.minute,
+                    );
+                    fechaHoraFinController.text = dateTime.toString().substring(
+                      0,
+                      16,
+                    ); // yyyy-MM-dd HH:mm
+                  }
+                }
+              },
+            ),
+          ],
         ),
         actions: <Widget>[
           TextButton(
@@ -108,7 +204,25 @@ Future<void> _dialogBuilder(BuildContext context) {
               textStyle: Theme.of(context).textTheme.labelLarge,
             ),
             child: const Text('Crear'),
-            onPressed: () {},
+            onPressed: () {
+              String nombre = nombreController.text;
+              String fechaHoraInicio = fechaHoraInicioController.text;
+              String fechaHoraFin = fechaHoraFinController.text;
+
+              if (nombre.isEmpty ||
+                  fechaHoraInicio.isEmpty ||
+                  fechaHoraFin.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Todos los campos son obligatorios')),
+                );
+              } else {
+                print("Evento: $nombre");
+                print("Inicio: $fechaHoraInicio");
+                print("Fin: $fechaHoraFin");
+
+                Navigator.of(context).pop();
+              }
+            },
           ),
         ],
       );
@@ -119,7 +233,7 @@ Future<void> _dialogBuilder(BuildContext context) {
 // ignore: must_be_immutable
 class _Body extends StatefulWidget {
   // const _Body({super.key});
-const _Body();
+  const _Body();
   @override
   State<_Body> createState() => _BodyState();
 }

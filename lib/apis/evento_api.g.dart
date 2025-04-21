@@ -2,7 +2,7 @@ part of 'evento_api.dart';
 
 class _EventoApi implements EventoApi {
   _EventoApi(this._dio, {this.baseUrl}) {
-    baseUrl ??= 'http://192.168.34.222';
+    baseUrl ??= 'http:// 192.168.165.222';
   }
 
   final Dio _dio;

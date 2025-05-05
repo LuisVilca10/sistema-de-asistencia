@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/apis/evento_api.dart';
 import 'package:flutter_application_1/src/core/controllers/theme_controller.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter_application_1/util/UbicacionUtil.dart';
 
 GlobalKey<ScaffoldState> homePageKey = GlobalKey<ScaffoldState>();
 GlobalKey<ScaffoldMessengerState> homePageMessengerKey =
@@ -72,10 +75,26 @@ class _HomePageState extends State<HomePage>
   }
 }
 
-Future<void> _dialogBuilder(BuildContext context) {
+Future<void> _dialogBuilder(BuildContext context) async {
   TextEditingController nombreController = TextEditingController();
   TextEditingController fechaHoraInicioController = TextEditingController();
   TextEditingController fechaHoraFinController = TextEditingController();
+
+  // Variables para la ubicación
+  double? latitud;
+  double? longitud;
+
+  // Obtención de ubicación al iniciar el diálogo
+  Position? position = await obtenerUbicacionActual();
+  if (position != null) {
+    latitud = position.latitude;
+    longitud = position.longitude;
+  } else {
+    // Mostrar un mensaje de error si no se puede obtener la ubicación
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('No se pudo obtener la ubicación')));
+  }
 
   return showDialog<void>(
     context: context,
@@ -204,23 +223,38 @@ Future<void> _dialogBuilder(BuildContext context) {
               textStyle: Theme.of(context).textTheme.labelLarge,
             ),
             child: const Text('Crear'),
-            onPressed: () {
+            onPressed: () async {
               String nombre = nombreController.text;
               String fechaHoraInicio = fechaHoraInicioController.text;
               String fechaHoraFin = fechaHoraFinController.text;
 
+              // Verificar si la latitud y longitud están disponibles
               if (nombre.isEmpty ||
                   fechaHoraInicio.isEmpty ||
-                  fechaHoraFin.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Todos los campos son obligatorios')),
-                );
+                  fechaHoraFin.isEmpty ||
+                  latitud == null ||
+                  longitud == null) {
+                // Mostrar error con SweetAlert, SnackBar o similar
+                return;
               } else {
+                // Aquí ya puedes hacer el POST a la API con todos los datos
                 print("Evento: $nombre");
                 print("Inicio: $fechaHoraInicio");
                 print("Fin: $fechaHoraFin");
+                print("Latitud: $latitud, Longitud: $longitud");
 
-                Navigator.of(context).pop();
+                final respuesta = await EventoApi().crearEvento(
+                  nombre: nombre,
+                  fechaInicio: fechaHoraInicio,
+                  fechaFin: fechaHoraFin,
+                  latitud: latitud,
+                  longitud: longitud,
+                );
+                if (respuesta["status"] == 1) {
+                  print("Evento creado");
+                } else {
+                  print("Evento: $respuesta");
+                }
               }
             },
           ),
@@ -232,8 +266,8 @@ Future<void> _dialogBuilder(BuildContext context) {
 
 // ignore: must_be_immutable
 class _Body extends StatefulWidget {
-  // const _Body({super.key});
   const _Body();
+
   @override
   State<_Body> createState() => _BodyState();
 }
@@ -241,42 +275,77 @@ class _Body extends StatefulWidget {
 class _BodyState extends State<_Body> {
   List<dynamic> notes = [];
 
+  @override
+  void initState() {
+    super.initState();
+    cargarEventos();
+  }
+
+  Future<void> cargarEventos() async {
+    // Aquí deberías llamar a tu API para obtener los eventos
+    // Este es un ejemplo simulado. Reemplázalo con tu API real
+    final eventos = await EventoApi().listarEventos(); // <-- tu función real
+    setState(() {
+      notes = eventos['eventos'] ?? [];
+    });
+  }
+
   Widget _image() {
     return Container(
       height: 100.0,
       width: double.infinity,
-      margin: EdgeInsets.only(left: 30, right: 30, top: 90),
-      decoration: BoxDecoration(
+      margin: const EdgeInsets.only(left: 30, right: 30, top: 90),
+      decoration: const BoxDecoration(
         image: DecorationImage(image: AssetImage("assets/logougel.png")),
+      ),
+    );
+  }
+
+  Widget _eventoCard(Map<String, dynamic> evento) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        title: Text(evento["nombre"] ?? "Sin nombre"),
+        subtitle: Text(
+          "Inicio: ${evento["fecha_inicio"]}\nFin: ${evento["fecha_fin"]}",
+        ),
+        leading: const Icon(Icons.event, color: Colors.blue),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          backgroundColor: ThemeController.instance.background(),
-          body: SizedBox(
-            height: double.infinity,
-            width: double.infinity,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _image(),
-                SizedBox(height: 20),
-                Container(
-                  margin: EdgeInsets.only(left: 20, right: 20),
-                  child: Text(
-                    "Presione el boton (+) para registrar un evento o reunión",
-                  ),
+    return Scaffold(
+      backgroundColor: ThemeController.instance.background(),
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child:
+            notes.isEmpty
+                ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _image(),
+                    const SizedBox(height: 20),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Text(
+                        "Presione el botón (+) para registrar un evento o reunión",
+                      ),
+                    ),
+                  ],
+                )
+                : ListView.builder(
+                  padding: const EdgeInsets.only(top: 1),
+                  itemCount: notes.length,
+                  itemBuilder: (context, index) {
+                    return _eventoCard(notes[index]);
+                  },
                 ),
-              ],
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

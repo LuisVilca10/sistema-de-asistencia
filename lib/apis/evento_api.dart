@@ -1,47 +1,64 @@
-import 'package:flutter_application_1/modelo/EventoModelo.dart';
-import 'package:flutter_application_1/modelo/GenericModelo.dart';
-import 'package:flutter_application_1/util/UrlApi.dart';
 import 'package:dio/dio.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
-import 'package:retrofit/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-part 'evento_api.g.dart';
+class EventoApi {
+  final Dio _dio = Dio();
 
-@RestApi(baseUrl: UrlApi.urlApix)
-abstract class EventoApi {
-  factory EventoApi(Dio dio, {String baseUrl}) = _EventoApi;
+  Future<Map<String, dynamic>> crearEvento({
+    required String nombre,
+    required String fechaInicio,
+    required String fechaFin,
+    required double latitud,
+    required double longitud,
+  }) async {
+    try {
+      // Obtener el token guardado
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token");
 
-  static EventoApi create() {
-    final dio = Dio();
-    dio.interceptors.add(PrettyDioLogger());
-    return EventoApi(dio);
+      if (token == null) {
+        return {
+          "status": 0,
+          "message": "Token no encontrado. Por favor, inicie sesión.",
+        };
+      }
+
+      final response = await _dio.post(
+        "http://localhost/sis-asis/eventos.php", // Cambia según tu backend
+        data: {
+          "nombre": nombre,
+          "fecha_inicio": fechaInicio,
+          "fecha_fin": fechaFin,
+          "latitud": latitud,
+          "longitud": longitud,
+        },
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token", // Aquí va el token
+            "Content-Type": "application/json",
+          },
+        ),
+      );
+
+      return response.data;
+    } catch (e) {
+      return {"status": 0, "message": "Error en conexión o servidor: $e"};
+    }
   }
 
-  @GET("/envento/list")
-  Future<List<EventoModelo>> getEvento(@Header("Authorization") String token);
+  Future<Map<String, dynamic>> listarEventos() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
 
-  @POST("/finca/crear")
-  Future<EventoModelo> crearEvento(
-    @Header("Authorization") String token,
-    @Body() EventoModelo finca,
-  );
+    try {
+      final response = await _dio.get(
+        "http://localhost/sis-asis/eventos.php",
+        options: Options(headers: {"Authorization": "Bearer $token"}),
+      );
 
-  @GET("/finca/buscar/{id}")
-  Future<EventoModelo> findEvento(
-    @Header("Authorization") String token,
-    @Path("id") int id,
-  );
-
-  @DELETE("/finca/eliminar/{id}")
-  Future<GenericModelo> deleteEvento(
-    @Header("Authorization") String token,
-    @Path("id") int id,
-  );
-
-  @PUT("/finca/editar/{id}")
-  Future<EventoModelo> updateEvento(
-    @Header("Authorization") String token,
-    @Path("id") int id,
-    @Body() EventoModelo finca,
-  );
+      return response.data;
+    } catch (e) {
+      return {"eventos": []}; // Retorna lista vacía en caso de error
+    }
+  }
 }

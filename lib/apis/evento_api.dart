@@ -6,6 +6,7 @@ class EventoApi {
 
   Future<Map<String, dynamic>> crearEvento({
     required String nombre,
+    String? imagen,
     required String fechaInicio,
     required String fechaFin,
     required double latitud,
@@ -27,6 +28,7 @@ class EventoApi {
         "http://localhost/sis-asis/eventos.php", // Cambia según tu backend
         data: {
           "nombre": nombre,
+          "imagen": imagen,
           "fecha_inicio": fechaInicio,
           "fecha_fin": fechaFin,
           "latitud": latitud,

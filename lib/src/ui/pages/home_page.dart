@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/apis/evento_api.dart';
@@ -302,16 +304,100 @@ class _BodyState extends State<_Body> {
   }
 
   Widget _eventoCard(Map<String, dynamic> evento) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        title: Text(evento["nombre"] ?? "Sin nombre"),
-        subtitle: Text(
-          "Inicio: ${evento["fecha_inicio"]}\nFin: ${evento["fecha_fin"]}",
+    return Container(
+      margin: const EdgeInsets.only(bottom: 5, top: 5),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            // Imagen de fondo
+            Container(
+              height: 200,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image:
+                      (evento["imagen"] != null &&
+                              evento["imagen"].toString().isNotEmpty)
+                          ? NetworkImage(evento["imagen"])
+                          : const AssetImage("assets/evento.jpg")
+                              as ImageProvider,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            // Capa de difuminado con info
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Info evento
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            evento["nombre"] ?? "Sin nombre",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "📅 ${evento["fecha_inicio"]} → ${evento["fecha_fin"]}",
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // Botón de acción
+                      IconButton(
+                        onPressed: () {
+                          // Acción de ver detalle
+                        },
+                        icon: const Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Ícono flotante
+            Positioned(
+              top: 12,
+              right: 12,
+              child: InkWell(
+                onTap: () {
+                  // Marcar como favorito, por ejemplo
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.favorite_border, color: Colors.red),
+                ),
+              ),
+            ),
+          ],
         ),
-        leading: const Icon(Icons.event, color: Colors.blue),
       ),
     );
   }

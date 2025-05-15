@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/apis/evento_api.dart';
 import 'package:flutter_application_1/src/core/controllers/theme_controller.dart';
+import 'package:flutter_application_1/src/ui/pages/evento_asistencia_page.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_application_1/util/UbicacionUtil.dart';
 
@@ -25,6 +26,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
+      final GlobalKey<_BodyState> bodyKey = GlobalKey<_BodyState>();
   @override
   void initState() {
     // TODO: implement initState
@@ -41,7 +43,9 @@ class _HomePageState extends State<HomePage>
           Scaffold(
             floatingActionButton: FloatingActionButton(
               backgroundColor: theme.primary(),
-              onPressed: () => _dialogBuilder(context),
+              onPressed: () => _dialogBuilder(context, () {
+                bodyKey.currentState?.actualizarLista();
+              }),
               child: Icon(Icons.add, size: 25, color: Colors.white),
             ),
             backgroundColor: theme.background(),
@@ -69,7 +73,7 @@ class _HomePageState extends State<HomePage>
                 )*/
               ],
             ),
-            body: _Body(),
+            body: _Body(key: bodyKey),
           ),
         ],
       ),
@@ -77,7 +81,7 @@ class _HomePageState extends State<HomePage>
   }
 }
 
-Future<void> _dialogBuilder(BuildContext context) async {
+Future<void> _dialogBuilder(BuildContext context, VoidCallback onEventoCreado) async {
   TextEditingController nombreController = TextEditingController();
   TextEditingController fechaHoraInicioController = TextEditingController();
   TextEditingController fechaHoraFinController = TextEditingController();
@@ -252,10 +256,47 @@ Future<void> _dialogBuilder(BuildContext context) async {
                   latitud: latitud,
                   longitud: longitud,
                 );
-                if (respuesta["status"] == 1) {
-                  print("Evento creado");
+                if (respuesta["success"] == true || respuesta["status"] == 1) {
+                  Navigator.pop(context); // Cierra el primer diálogo
+
+                  // Muestra el segundo diálogo de éxito
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext innerContext) {
+                      // Usamos innerContext para referenciar este diálogo
+                      // Este contexto es clave para cerrarlo luego
+                      Future.delayed(const Duration(seconds: 2), () {
+                        Navigator.pop(innerContext); // Cierra este diálogo
+                        onEventoCreado(); // Actualiza la lista
+                      });
+
+                      return AlertDialog(
+                        title: const Text('✅ Evento creado'),
+                        content: const Text('El evento se ha registrado correctamente.'),
+                      );
+                    },
+                  );
                 } else {
-                  print("Evento: $respuesta");
+                  // Si la respuesta es null o no contiene el status esperado
+                 print("Error al crear evento: ${respuesta?["message"] ?? "Respuesta inesperada"}");
+
+                  // Aquí podrías mostrar un mensaje de error con un diálogo o Snackbar
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Error'),
+                        content: const Text('Hubo un problema al crear el evento. Por favor, inténtalo nuevamente.'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Cerrar'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 }
               }
             },
@@ -268,7 +309,7 @@ Future<void> _dialogBuilder(BuildContext context) async {
 
 // ignore: must_be_immutable
 class _Body extends StatefulWidget {
-  const _Body();
+  const _Body({Key? key}) : super(key: key);
 
   @override
   State<_Body> createState() => _BodyState();
@@ -283,6 +324,11 @@ class _BodyState extends State<_Body> {
     cargarEventos();
   }
 
+  void actualizarLista() {
+  print("Actualizando lista...");
+  cargarEventos();
+}
+
   Future<void> cargarEventos() async {
     // Aquí deberías llamar a tu API para obtener los eventos
     // Este es un ejemplo simulado. Reemplázalo con tu API real
@@ -291,6 +337,8 @@ class _BodyState extends State<_Body> {
       notes = eventos['eventos'] ?? [];
     });
   }
+
+
 
   Widget _image() {
     return Container(
@@ -303,9 +351,28 @@ class _BodyState extends State<_Body> {
     );
   }
 
-  Widget _eventoCard(Map<String, dynamic> evento) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 5, top: 5),
+Widget _eventoCard(Map<String, dynamic> evento) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => EventoAsistenciaPage(evento: evento),
+        ),
+      );
+    },
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            offset: const Offset(0, -2),
+            blurRadius: 6,
+          ),
+        ],
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Stack(
@@ -316,17 +383,16 @@ class _BodyState extends State<_Body> {
               width: double.infinity,
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image:
-                      (evento["imagen"] != null &&
-                              evento["imagen"].toString().isNotEmpty)
-                          ? NetworkImage(evento["imagen"])
-                          : const AssetImage("assets/evento.jpg")
-                              as ImageProvider,
+                  image: (evento["imagen"] != null &&
+                          evento["imagen"].toString().isNotEmpty)
+                      ? NetworkImage(evento["imagen"])
+                      : const AssetImage("assets/evento.jpg")
+                          as ImageProvider,
                   fit: BoxFit.cover,
                 ),
               ),
             ),
-            // Capa de difuminado con info
+            // Capa de info
             Positioned(
               bottom: 0,
               left: 0,
@@ -366,7 +432,12 @@ class _BodyState extends State<_Body> {
                       // Botón de acción
                       IconButton(
                         onPressed: () {
-                          // Acción de ver detalle
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EventoAsistenciaPage(evento: evento),
+                            ),
+                          );
                         },
                         icon: const Icon(
                           Icons.arrow_forward_ios,
@@ -378,13 +449,75 @@ class _BodyState extends State<_Body> {
                 ),
               ),
             ),
-            // Ícono flotante
+            // Ícono flotante con menú de opciones
             Positioned(
               top: 12,
               right: 12,
               child: InkWell(
-                onTap: () {
-                  // Marcar como favorito, por ejemplo
+                onTap: () async {
+                  final selected = await showMenu<String>(
+                    context: context,
+                    position: RelativeRect.fromLTRB(1000, 115, 25, 0),
+                    items: const [
+                      PopupMenuItem<String>(
+                        value: 'nombre',
+                        child: Text('Cambiar nombre'),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'fondo',
+                        child: Text('Editar fondo'),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'configuracion',
+                        child: Text('Configuración'),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'eliminar',
+                        child: Text('Eliminar'),
+                      ),
+                    ],
+                  );
+
+                  if (selected == 'nombre') {
+                    _cambiarNombreEvento(context, evento);
+                  }
+
+                  if (selected == 'eliminar') {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Confirmar eliminación'),
+                        content: const Text('¿Estás seguro de que deseas eliminar este evento?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancelar'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                            child: const Text('Eliminar'),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+                      final api = EventoApi();
+                      final response = await api.eliminarEvento(int.parse(evento['id'].toString()));
+
+                      if (response['success'] == true) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Evento eliminado con éxito')),
+                        );
+                        actualizarLista();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error al eliminar: ${response['message'] ?? 'desconocido'}')),
+                        );
+                      }
+                    }
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.all(8),
@@ -392,46 +525,99 @@ class _BodyState extends State<_Body> {
                     color: Colors.white.withOpacity(0.8),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.favorite_border, color: Colors.red),
+                  child: const Icon(Icons.more_vert, color: Color.fromARGB(255, 61, 141, 128)),
                 ),
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: ThemeController.instance.background(),
-      body: SizedBox(
-        width: double.infinity,
-        height: double.infinity,
-        child:
-            notes.isEmpty
-                ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _image(),
-                    const SizedBox(height: 20),
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 20),
-                      child: const Text(
-                        "Presione el botón (+) para registrar un evento o reunión",
-                      ),
-                    ),
-                  ],
-                )
-                : ListView.builder(
-                  padding: const EdgeInsets.only(top: 1),
-                  itemCount: notes.length,
-                  itemBuilder: (context, index) {
-                    return _eventoCard(notes[index]);
-                  },
-                ),
-      ),
-    );
-  }
+    ),
+  );
 }
+
+// Función _cambiarNombreEvento movida fuera del widget _eventoCard
+void _cambiarNombreEvento(BuildContext outerContext, Map evento) {
+  final TextEditingController controller =
+      TextEditingController(text: evento['nombre']);
+
+  showDialog(
+    context: outerContext,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Cambiar nombre del evento"),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(labelText: "Nuevo nombre"),
+        ),
+        actions: [
+          TextButton(
+            child: const Text("Cancelar"),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton(
+            child: const Text("Guardar"),
+            onPressed: () async {
+              final nuevoNombre = controller.text.trim();
+              if (nuevoNombre.isNotEmpty) {
+                final api = EventoApi();
+                final respuesta = await api.actualizarNombreEvento(
+                  int.parse(evento['id'].toString()),
+                  nuevoNombre,
+                );
+                if (respuesta['success'] == true) {
+                  Navigator.pop(context);
+                  
+                  // Usa el contexto externo (que tiene Scaffold)
+                  ScaffoldMessenger.of(outerContext).showSnackBar(
+                    const SnackBar(content: Text("Nombre actualizado")),
+                  );
+
+                  await cargarEventos();
+                  print("Eventos actualizados: ${notes.length}");
+                } else {
+                  ScaffoldMessenger.of(outerContext).showSnackBar(
+                    SnackBar(content: Text("Error: ${respuesta['error']}")),
+                  );
+                }
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: ThemeController.instance.background(),
+    body: SizedBox(
+      width: double.infinity,
+      height: double.infinity,
+      child: notes.isEmpty
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _image(),
+                const SizedBox(height: 20),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  child: const Text(
+                    "Presione el botón (+) para registrar un evento o reunión",
+                  ),
+                ),
+              ],
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.only(top: 1),
+              itemCount: notes.length,
+              itemBuilder: (context, index) {
+                return _eventoCard(notes[index]);
+              },
+                              ),
+                  ),
+                );
+              }
+            }

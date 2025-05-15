@@ -13,7 +13,6 @@ class EventoApi {
     required double longitud,
   }) async {
     try {
-      // Obtener el token guardado
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("token");
 
@@ -25,7 +24,7 @@ class EventoApi {
       }
 
       final response = await _dio.post(
-        "http://localhost/sis-asis/eventos.php", // Cambia según tu backend
+        "http://localhost/sis-asis/eventos.php",
         data: {
           "nombre": nombre,
           "imagen": imagen,
@@ -36,7 +35,7 @@ class EventoApi {
         },
         options: Options(
           headers: {
-            "Authorization": "Bearer $token", // Aquí va el token
+            "Authorization": "Bearer $token",
             "Content-Type": "application/json",
           },
         ),
@@ -60,7 +59,53 @@ class EventoApi {
 
       return response.data;
     } catch (e) {
-      return {"eventos": []}; // Retorna lista vacía en caso de error
+      return {"eventos": []};
     }
   }
+
+    Future<Map<String, dynamic>> eliminarEvento(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+    
+    try {
+      final response = await _dio.delete(
+        "http://localhost/sis-asis/eventos.php?id=$id",
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+          },
+        ),
+      );
+      return response.data;
+    } catch (e) {
+      return {"status": 0, "message": "Error al eliminar evento: $e"};
+    }
+  }
+
+Future<Map<String, dynamic>> actualizarNombreEvento(int id, String nuevoNombre) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString("token");
+
+  try {
+    final response = await _dio.put(
+      "http://localhost/sis-asis/eventos.php",
+      data: {
+        "id": id,
+        "nuevo_nombre": nuevoNombre,
+      },
+      options: Options(
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      ),
+    );
+
+    return response.data;
+  } catch (e) {
+    return {"success": false, "error": "Error de conexión o servidor: $e"};
+  }
+}
+
 }

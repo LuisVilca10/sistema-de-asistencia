@@ -24,7 +24,7 @@ class EventoApi {
       }
 
       final response = await _dio.post(
-        "http://localhost/sis-asis/eventos.php",
+        "http://192.168.71.189/sis-asis/eventos.php",
         data: {
           "nombre": nombre,
           "imagen": imagen,
@@ -53,7 +53,7 @@ class EventoApi {
 
     try {
       final response = await _dio.get(
-        "http://localhost/sis-asis/eventos.php",
+        "http://192.168.71.189/sis-asis/eventos.php",
         options: Options(headers: {"Authorization": "Bearer $token"}),
       );
 
@@ -63,25 +63,25 @@ class EventoApi {
     }
   }
 
-    Future<Map<String, dynamic>> eliminarEvento(int id) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString("token");
-    
-    try {
-      final response = await _dio.delete(
-        "http://localhost/sis-asis/eventos.php?id=$id",
-        options: Options(
-          headers: {
-            "Authorization": "Bearer $token",
-            "Content-Type": "application/json",
-          },
-        ),
-      );
-      return response.data;
-    } catch (e) {
-      return {"status": 0, "message": "Error al eliminar evento: $e"};
-    }
+Future<Map<String, dynamic>> eliminarEvento(int id) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString("token");
+  
+  try {
+    final response = await _dio.delete(
+      "http://192.168.71.189/sis-asis/eventos.php?id=$id",  // ← aquí el id en la URL
+      options: Options(
+        headers: {
+          "Authorization": "Bearer $token",
+          "Content-Type": "application/json",
+        },
+      ),
+    );
+    return response.data;
+  } catch (e) {
+    return {"status": 0, "message": "Error al eliminar evento: $e"};
   }
+}
 
 Future<Map<String, dynamic>> actualizarNombreEvento(int id, String nuevoNombre) async {
   final prefs = await SharedPreferences.getInstance();
@@ -89,10 +89,10 @@ Future<Map<String, dynamic>> actualizarNombreEvento(int id, String nuevoNombre) 
 
   try {
     final response = await _dio.put(
-      "http://localhost/sis-asis/eventos.php",
+      "http://192.168.71.189/sis-asis/eventos.php",
       data: {
         "id": id,
-        "nuevo_nombre": nuevoNombre,
+        "nombre": nuevoNombre, // <- CAMBIO AQUÍ
       },
       options: Options(
         headers: {

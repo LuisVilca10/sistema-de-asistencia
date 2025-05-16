@@ -97,9 +97,9 @@ Future<void> _dialogBuilder(BuildContext context, VoidCallback onEventoCreado) a
     longitud = position.longitude;
   } else {
     // Mostrar un mensaje de error si no se puede obtener la ubicación
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('No se pudo obtener la ubicación')));
+    homePageMessengerKey.currentState?.showSnackBar(
+  const SnackBar(content: Text('No se pudo obtener la ubicación')),
+);
   }
 
   return showDialog<void>(
@@ -421,7 +421,14 @@ Widget _eventoCard(Map<String, dynamic> evento) {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            "📅 ${evento["fecha_inicio"]} → ${evento["fecha_fin"]}",
+                            "📅 Inicio: ${evento["fecha_inicio"]}",
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
+                          Text(
+                            "📅 Fin: ${evento["fecha_fin"]}",
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 13,

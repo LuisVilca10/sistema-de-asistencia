@@ -24,7 +24,7 @@ class EventoApi {
       }
 
       final response = await _dio.post(
-        "http://192.168.71.189/sis-asis/eventos.php",
+        "http://localhost/sis-asis/eventos.php",
         data: {
           "nombre": nombre,
           "imagen": imagen,
@@ -53,7 +53,7 @@ class EventoApi {
 
     try {
       final response = await _dio.get(
-        "http://192.168.71.189/sis-asis/eventos.php",
+        "http://localhost/sis-asis/eventos.php",
         options: Options(headers: {"Authorization": "Bearer $token"}),
       );
 
@@ -69,7 +69,7 @@ Future<Map<String, dynamic>> eliminarEvento(int id) async {
   
   try {
     final response = await _dio.delete(
-      "http://192.168.71.189/sis-asis/eventos.php?id=$id",  // ← aquí el id en la URL
+      "http://localhost/sis-asis/eventos.php?id=$id",  // ← aquí el id en la URL
       options: Options(
         headers: {
           "Authorization": "Bearer $token",
@@ -89,7 +89,7 @@ Future<Map<String, dynamic>> actualizarNombreEvento(int id, String nuevoNombre) 
 
   try {
     final response = await _dio.put(
-      "http://192.168.71.189/sis-asis/eventos.php",
+      "http://localhost/sis-asis/eventos.php",
       data: {
         "id": id,
         "nombre": nuevoNombre, // <- CAMBIO AQUÍ

@@ -33,6 +33,76 @@ class _HomePageState extends State<HomePage>
     super.initState();
   }
 
+  Future<bool> verificarYObtenerUbicacion() async {
+  bool servicioHabilitado = await Geolocator.isLocationServiceEnabled();
+  if (!servicioHabilitado) {
+    await Geolocator.openLocationSettings();
+    return false;
+  }
+
+  LocationPermission permiso = await Geolocator.checkPermission();
+  if (permiso == LocationPermission.denied) {
+    permiso = await Geolocator.requestPermission();
+    if (permiso == LocationPermission.denied) {
+      return false;
+    }
+  }
+
+  if (permiso == LocationPermission.deniedForever) {
+    return false;
+  }
+
+  return true;
+}
+
+  Widget _buildDrawer(BuildContext context) {
+return Drawer(
+  child: Column(
+    children: [
+      const SizedBox(height: 5),
+      Column(
+        children: [
+          SizedBox(
+            height: 180,
+            width: 180,
+            child: Image.asset('assets/logougel.png'),
+          ),   
+        ],
+      ),
+      const Divider(),
+      ListTile(
+        leading: const Icon(Icons.event),
+        title: const Text('Eventos'),
+        onTap: () {
+          Navigator.pop(context);
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.qr_code),
+        title: const Text('Asistencia'),
+        onTap: () {
+          Navigator.pop(context);
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.settings),
+        title: const Text('Configuración'),
+        onTap: () {
+          Navigator.pop(context);
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.info),
+        title: const Text('Acerca de'),
+        onTap: () {
+          Navigator.pop(context);
+        },
+      ),
+    ],
+  ),
+);
+}
+
   @override
   Widget build(BuildContext context) {
     final theme = ThemeController.instance;
@@ -41,40 +111,35 @@ class _HomePageState extends State<HomePage>
       child: Stack(
         children: [
           Scaffold(
-            floatingActionButton: FloatingActionButton(
-              backgroundColor: theme.primary(),
-              onPressed: () => _dialogBuilder(context, () {
-                bodyKey.currentState?.actualizarLista();
-              }),
-              child: Icon(Icons.add, size: 25, color: Colors.white),
-            ),
-            backgroundColor: theme.background(),
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.blue,
-              elevation: 0,
-              leading: IconButton(
-                onPressed: () => {},
-                icon: Icon(Icons.menu, color: fontColor()),
-              ),
-              actions: [
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(CupertinoIcons.info_circle, color: fontColor()),
-                ),
-                /*IconButton(
-                  onPressed: () {
-                    _controller.open();
-                  },
-                  icon: Icon(
-                    Icons.lock,
-                    color: fontColor(),
-                  ),
-                )*/
-              ],
-            ),
-            body: _Body(key: bodyKey),
-          ),
+  key: homePageKey, // Asegúrate de que esté definido
+  drawer: _buildDrawer(context), // <--- Aquí agregas el drawer
+  floatingActionButton: FloatingActionButton(
+    backgroundColor: theme.primary(),
+    onPressed: () => _dialogBuilder(context, () {
+      bodyKey.currentState?.actualizarLista();
+    }),
+    child: Icon(Icons.add, size: 25, color: Colors.white),
+  ),
+  backgroundColor: theme.background(),
+  appBar: AppBar(
+    automaticallyImplyLeading: false,
+    backgroundColor: Colors.blue,
+    elevation: 0,
+    leading: IconButton(
+      onPressed: () {
+        homePageKey.currentState?.openDrawer(); // <--- Abre el drawer
+      },
+      icon: Icon(Icons.menu, color: fontColor()),
+    ),
+    actions: [
+      IconButton(
+        onPressed: () {},
+        icon: Icon(CupertinoIcons.info_circle, color: fontColor()),
+      ),
+    ],
+  ),
+  body: _Body(key: bodyKey),
+),
         ],
       ),
     );
@@ -90,17 +155,37 @@ Future<void> _dialogBuilder(BuildContext context, VoidCallback onEventoCreado) a
   double? latitud;
   double? longitud;
 
-  // Obtención de ubicación al iniciar el diálogo
-  Position? position = await obtenerUbicacionActual();
-  if (position != null) {
-    latitud = position.latitude;
-    longitud = position.longitude;
-  } else {
-    // Mostrar un mensaje de error si no se puede obtener la ubicación
+  // Verifica que el GPS esté activado y se tengan permisos
+bool gpsActivo = await Geolocator.isLocationServiceEnabled();
+if (!gpsActivo) {
+  await Geolocator.openLocationSettings();
+  homePageMessengerKey.currentState?.showSnackBar(
+    const SnackBar(content: Text('Por favor, activa el GPS')),
+  );
+  return;
+}
+
+LocationPermission permiso = await Geolocator.checkPermission();
+if (permiso == LocationPermission.denied) {
+  permiso = await Geolocator.requestPermission();
+  if (permiso == LocationPermission.denied) {
     homePageMessengerKey.currentState?.showSnackBar(
-  const SnackBar(content: Text('No se pudo obtener la ubicación')),
-);
+      const SnackBar(content: Text('Permiso de ubicación denegado')),
+    );
+    return;
   }
+}
+if (permiso == LocationPermission.deniedForever) {
+  homePageMessengerKey.currentState?.showSnackBar(
+    const SnackBar(content: Text('Ubicación permanentemente denegada. Ve a ajustes.')),
+  );
+  return;
+}
+
+// Si todo está bien, obtener la ubicación
+Position position = await Geolocator.getCurrentPosition();
+latitud = position.latitude;
+longitud = position.longitude;
 
   return showDialog<void>(
     context: context,

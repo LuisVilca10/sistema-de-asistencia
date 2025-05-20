@@ -29,7 +29,7 @@ Future<void> marcarAsistencia(String dni) async {
   final fecha = DateFormat('yyyy-MM-dd').format(now);
   final hora = DateFormat('HH:mm:ss').format(now);
 
-  final urlCheck = Uri.parse('http://localhost/sis-asis/verificar_usuario.php?dni=$dni');
+  final urlCheck = Uri.parse('http://192.168.27.201/sis-asis/verificar_usuario.php?dni=$dni');
   final checkRes = await http.get(urlCheck);
 
   if (checkRes.statusCode == 200) {
@@ -41,7 +41,7 @@ Future<void> marcarAsistencia(String dni) async {
 
       // ✅ Verificar si ya marcó asistencia hoy
       final checkAsistenciaUrl = Uri.parse(
-        'http://localhost/sis-asis/verificar_asistencia.php?dni=$dni&evento_id=$idEvento&fecha=$fecha',
+        'http://192.168.27.201/sis-asis/verificar_asistencia.php?dni=$dni&evento_id=$idEvento&fecha=$fecha',
       );
       final checkAsistenciaRes = await http.get(checkAsistenciaUrl);
       final yaAsistio = jsonDecode(checkAsistenciaRes.body)['ya_asistio'] == true;
@@ -111,7 +111,7 @@ Future<void> marcarAsistencia(String dni) async {
 
 
   Future<void> registrarAsistencia(int eventoId, String dni, String fecha, String hora) async {
-    final url = Uri.parse('http://localhost/sis-asis/registrar_asistencia.php');
+    final url = Uri.parse('http://192.168.27.201/sis-asis/registrar_asistencia.php');
     await http.post(url, body: {
       'evento_id': eventoId.toString(),
       'fecha': fecha,
@@ -127,7 +127,7 @@ Future<void> marcarAsistencia(String dni) async {
 
     if (dni.isEmpty || nombre.isEmpty) return;
 
-    final url = Uri.parse('http://localhost/sis-asis/registrar_usuario.php');
+    final url = Uri.parse('http://192.168.27.201/sis-asis/registrar_usuario.php');
     final res = await http.post(url, body: {
       'dni': dni,
       'le': dni,
@@ -154,7 +154,7 @@ Future<void> marcarAsistencia(String dni) async {
   }
 
   Future<void> obtenerUltimasAsistencias(String dni) async {
-  final url = Uri.parse('http://localhost/sis-asis/ultimas_asistencias.php?dni=$dni');
+  final url = Uri.parse('http://192.168.27.201/sis-asis/ultimas_asistencias.php?dni=$dni');
   final res = await http.get(url);
 
   if (res.statusCode == 200) {

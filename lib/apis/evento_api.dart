@@ -63,49 +63,76 @@ class EventoApi {
     }
   }
 
-Future<Map<String, dynamic>> eliminarEvento(int id) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString("token");
-  
-  try {
-    final response = await _dio.delete(
-      "http://192.168.27.201/sis-asis/eventos.php?id=$id",  // ← aquí el id en la URL
-      options: Options(
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
-      ),
-    );
-    return response.data;
-  } catch (e) {
-    return {"status": 0, "message": "Error al eliminar evento: $e"};
+  Future<Map<String, dynamic>> eliminarEvento(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    try {
+      final response = await _dio.delete(
+        "http://192.168.27.201/sis-asis/eventos.php?id=$id", // ← aquí el id en la URL
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+          },
+        ),
+      );
+      return response.data;
+    } catch (e) {
+      return {"status": 0, "message": "Error al eliminar evento: $e"};
+    }
   }
-}
 
-Future<Map<String, dynamic>> actualizarNombreEvento(int id, String nuevoNombre) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString("token");
+  Future<Map<String, dynamic>> actualizarNombreEvento(
+    int id,
+    String nuevoNombre,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
 
-  try {
-    final response = await _dio.put(
-      "http://192.168.27.201/sis-asis/eventos.php",
-      data: {
-        "id": id,
-        "nombre": nuevoNombre, // <- CAMBIO AQUÍ
-      },
-      options: Options(
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
+    try {
+      final response = await _dio.put(
+        "http://192.168.27.201/sis-asis/eventos.php",
+        data: {
+          "id": id,
+          "nombre": nuevoNombre, // <- CAMBIO AQUÍ
         },
-      ),
-    );
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+          },
+        ),
+      );
 
-    return response.data;
-  } catch (e) {
-    return {"success": false, "error": "Error de conexión o servidor: $e"};
+      return response.data;
+    } catch (e) {
+      return {"success": false, "error": "Error de conexión o servidor: $e"};
+    }
   }
-}
 
+  Future<Map<String, dynamic>> actualizarFondoEvento(
+    int id,
+    String base64Image,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    try {
+      final response = await _dio.put(
+        "http://192.168.27.201/sis-asis/eventos.php",
+        data: {"id": id, "imagen": base64Image},
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+            "Content-Type": "application/json",
+          },
+        ),
+      );
+
+      return response.data;
+    } catch (e) {
+      return {"success": false, "error": "Error de conexión o servidor: $e"};
+    }
+  }
 }

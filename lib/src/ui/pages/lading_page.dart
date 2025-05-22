@@ -170,7 +170,6 @@ class _LandingPageState extends State<LandingPage>
                           LoadingWidgetController.instance.close();
 
                           if (response["status"] == 1) {
-                            // Guardar token si deseas
                             final prefs = await SharedPreferences.getInstance();
                             await prefs.setString("token", response["token"]);
 

@@ -135,4 +135,28 @@ class EventoApi {
       return {"success": false, "error": "Error de conexión o servidor: $e"};
     }
   }
+
+Future<List<Map<String, dynamic>>> listarAsistentesPorEvento(int eventoId) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString("token");
+
+  try {
+    final response = await _dio.get(
+      "http://192.168.27.201/sis-asis/asistentes.php?evento_id=$eventoId",
+      options: Options(headers: {
+        "Authorization": "Bearer $token",
+      }),
+    );
+
+    if (response.statusCode == 200 && response.data["success"] == true) {
+      return List<Map<String, dynamic>>.from(response.data["asistentes"]);
+    } else {
+      return [];
+    }
+  } catch (e) {
+    print("Error al listar asistentes: $e");
+    return [];
+  }
+}
+
 }

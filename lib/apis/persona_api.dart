@@ -11,19 +11,12 @@ class PersonaApi {
     try {
       final response = await _dio.post(
         "http://192.168.27.201/sis-asis/auth.php", // Cambia esto
-        data: {
-          "nombre": nombre,
-          "correo": correo,
-          "dni": dni,
-        },
+        data: {"nombre": nombre, "correo": correo, "dni": dni},
       );
 
       return response.data;
     } catch (e) {
-      return {
-        "status": 0,
-        "message": "Error en conexión o en el servidor: $e",
-      };
+      return {"status": 0, "message": "Error en conexión o en el servidor: $e"};
     }
   }
 }

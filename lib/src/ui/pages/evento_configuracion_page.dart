@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:open_file/open_file.dart'; // <-- Agregado
+import 'package:flutter_application_1/src/ui/pages/RuletaPage.dart';
 
 Future<void> descargarCSV(BuildContext context, String eventoId) async {
   final url = Uri.parse(
@@ -42,9 +43,9 @@ Future<void> descargarCSV(BuildContext context, String eventoId) async {
     await file.writeAsBytes(bytes);
 
     // Mostrar mensaje
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Archivo guardado en: $path')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Archivo guardado en: $path')));
 
     // Abrir el archivo automáticamente
     final result = await OpenFile.open(path);
@@ -54,7 +55,6 @@ Future<void> descargarCSV(BuildContext context, String eventoId) async {
         SnackBar(content: Text('No se pudo abrir el archivo automáticamente')),
       );
     }
-
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Error al descargar CSV: ${response.statusCode}')),
@@ -77,12 +77,23 @@ class EventoConfiguracionPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton.icon(
+              icon: Icon(Icons.casino),
+              label: Text('Sorteo'),
+              onPressed: () {
+                Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => RuletaPage(eventoId: int.parse(evento['id'].toString())),
+  ),
+);
+              },
+            ),
+            SizedBox(height: 20), // Espacio entre botones
+            ElevatedButton.icon(
               icon: Icon(Icons.download),
               label: Text('Exportar'),
               onPressed: () {
-                final eventoId =
-                    evento['id']
-                        .toString(); // Asegúrate de convertirlo a String
+                final eventoId = evento['id'].toString();
                 descargarCSV(context, eventoId);
               },
             ),

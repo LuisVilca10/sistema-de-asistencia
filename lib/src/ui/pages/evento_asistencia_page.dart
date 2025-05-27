@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -262,21 +263,50 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
   }
 }
 
-class BarcodeScannerPage extends StatelessWidget {
+class BarcodeScannerPage extends StatefulWidget {
   const BarcodeScannerPage({super.key});
+
+  @override
+  State<BarcodeScannerPage> createState() => _BarcodeScannerPageState();
+}
+
+class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
+  bool _permissionGranted = false;
+  bool _isScanned = false; // 👈 Bandera para evitar múltiples lecturas
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermission();
+  }
+
+  Future<void> _checkPermission() async {
+    final status = await Permission.camera.request();
+    if (status.isGranted) {
+      setState(() => _permissionGranted = true);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Permiso de cámara denegado")),
+      );
+      Navigator.pop(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Escanear DNI')),
-      body: MobileScanner(
-        onDetect: (barcode, args) {
-          final code = barcode.rawValue ?? '';
-          if (code.isNotEmpty) {
-            Navigator.pop(context, code);
-          }
-        },
-      ),
+      body: _permissionGranted
+          ? MobileScanner(
+              onDetect: (barcode, args) {
+                final code = barcode.rawValue ?? '';
+                if (code.isNotEmpty && !_isScanned) {
+                  _isScanned = true; // 👈 Bloquea más lecturas
+                  Navigator.pop(context, code);
+                }
+              },
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

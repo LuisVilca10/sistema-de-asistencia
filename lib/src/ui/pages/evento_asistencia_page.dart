@@ -30,7 +30,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
     final hora = DateFormat('HH:mm:ss').format(now);
 
     final urlCheck = Uri.parse(
-      'http://192.168.27.201/sis-asis/verificar_usuario.php?dni=$dni',
+      'http://localhost/sis-asis/verificar_usuario.php?dni=$dni',
     );
     final checkRes = await http.get(urlCheck);
 
@@ -43,7 +43,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
 
         // ✅ Verificar si ya marcó asistencia hoy
         final checkAsistenciaUrl = Uri.parse(
-          'http://192.168.27.201/sis-asis/verificar_asistencia.php?dni=$dni&evento_id=$idEvento&fecha=$fecha',
+          'http://localhost/sis-asis/verificar_asistencia.php?dni=$dni&evento_id=$idEvento&fecha=$fecha',
         );
         final checkAsistenciaRes = await http.get(checkAsistenciaUrl);
         final yaAsistio =
@@ -120,9 +120,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
     String fecha,
     String hora,
   ) async {
-    final url = Uri.parse(
-      'http://192.168.27.201/sis-asis/registrar_asistencia.php',
-    );
+    final url = Uri.parse('http://localhost/sis-asis/registrar_asistencia.php');
     await http.post(
       url,
       body: {
@@ -141,9 +139,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
 
     if (dni.isEmpty || nombre.isEmpty) return;
 
-    final url = Uri.parse(
-      'http://192.168.27.201/sis-asis/registrar_usuario.php',
-    );
+    final url = Uri.parse('http://localhost/sis-asis/registrar_usuario.php');
     final res = await http.post(
       url,
       body: {'dni': dni, 'le': dni, 'nombres': nombre},
@@ -170,7 +166,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
 
   Future<void> obtenerUltimasAsistencias(String dni) async {
     final url = Uri.parse(
-      'http://192.168.27.201/sis-asis/ultimas_asistencias.php?dni=$dni',
+      'http://localhost/sis-asis/ultimas_asistencias.php?dni=$dni',
     );
     final res = await http.get(url);
 
@@ -296,17 +292,18 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Escanear DNI')),
-      body: _permissionGranted
-          ? MobileScanner(
-              onDetect: (barcode, args) {
-                final code = barcode.rawValue ?? '';
-                if (code.isNotEmpty && !_isScanned) {
-                  _isScanned = true; // 👈 Bloquea más lecturas
-                  Navigator.pop(context, code);
-                }
-              },
-            )
-          : const Center(child: CircularProgressIndicator()),
+      body:
+          _permissionGranted
+              ? MobileScanner(
+                onDetect: (barcode, args) {
+                  final code = barcode.rawValue ?? '';
+                  if (code.isNotEmpty && !_isScanned) {
+                    _isScanned = true; // 👈 Bloquea más lecturas
+                    Navigator.pop(context, code);
+                  }
+                },
+              )
+              : const Center(child: CircularProgressIndicator()),
     );
   }
 }

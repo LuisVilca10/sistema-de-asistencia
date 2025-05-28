@@ -10,6 +10,7 @@ import 'package:flutter_application_1/src/ui/pages/evento_asistencia_page.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_application_1/util/UbicacionUtil.dart';
 import 'package:flutter_application_1/src/ui/pages/evento_configuracion_page.dart';
+import 'package:flutter_application_1/src/ui/pages/acerca_de_page.dart';
 
 GlobalKey<ScaffoldState> homePageKey = GlobalKey<ScaffoldState>();
 GlobalKey<ScaffoldMessengerState> homePageMessengerKey =
@@ -98,7 +99,11 @@ class _HomePageState extends State<HomePage>
             leading: const Icon(Icons.info),
             title: const Text('Acerca de'),
             onTap: () {
-              Navigator.pop(context);
+              Navigator.pop(context); // Cierra el drawer
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AcercaDePage()),
+              );
             },
           ),
         ],
@@ -137,12 +142,97 @@ class _HomePageState extends State<HomePage>
               ),
               actions: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text('Información del módulo'),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildInfoItem(
+                                  Icons.menu,
+                                  'Menu de la app',
+                                  'Muestra una lista de opciones con la que cuenta la app de asistencia de la Ugel.',
+                                ),
+                                _buildInfoItem(
+                                  Icons.add,
+                                  'Crear evento',
+                                  'Crea un nuevo evento registrando nombre, fecha de inicio y fecha fin del evento.',
+                                ),
+                                _buildInfoItem(
+                                  Icons.arrow_forward_ios,
+                                  'Ingresar al evento',
+                                  'Ingresa al evento para marcar asistencia.',
+                                ),
+                                _buildInfoItem(
+                                  Icons.more_vert,
+                                  'Menu del evento',
+                                  'Muestra una lista de opciones para configurar el evento, como cambiar la imagen, editar el nombre, realizar sorteos, realizar mas configuraciones y eliminar.',
+                                ),
+                                _buildInfoItem(
+                                  Icons.edit,
+                                  'Cambiar nombre',
+                                  'Permite editar el nombre del módulo o evento.',
+                                ),
+                                _buildInfoItem(
+                                  Icons.image,
+                                  'Editar fondo',
+                                  'Cambia la imagen de fondo del evento.',
+                                ),
+                                _buildInfoItem(
+                                  Icons.settings,
+                                  'Configuración',
+                                  'Accede a opciones avanzadas del evento.',
+                                ),
+                                _buildInfoItem(
+                                  Icons.delete,
+                                  'Eliminar',
+                                  'Elimina el módulo o evento permanentemente.',
+                                ),                               
+                              ],
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('Cerrar'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
                   icon: Icon(CupertinoIcons.info_circle, color: fontColor()),
                 ),
               ],
             ),
             body: _Body(key: bodyKey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoItem(IconData icon, String title, String description) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.blue),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(height: 2),
+                Text(description, style: TextStyle(color: Colors.grey[700])),
+              ],
+            ),
           ),
         ],
       ),
@@ -485,7 +575,7 @@ class _BodyState extends State<_Body> {
                         (evento["imagen"] != null &&
                                 evento["imagen"].toString().isNotEmpty)
                             ? NetworkImage(
-                              "http://192.168.27.201/sis-asis/${evento["imagen"]}?v=${DateTime.now().millisecondsSinceEpoch}",
+                              "http://localhost/sis-asis/${evento["imagen"]}?v=${DateTime.now().millisecondsSinceEpoch}",
                             )
                             : const AssetImage("assets/evento.jpg")
                                 as ImageProvider,
@@ -578,19 +668,47 @@ class _BodyState extends State<_Body> {
                           items: const [
                             PopupMenuItem<String>(
                               value: 'nombre',
-                              child: Text('Cambiar nombre'),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('Cambiar nombre'),
+                                ],
+                              ),
                             ),
                             PopupMenuItem<String>(
                               value: 'fondo',
-                              child: Text('Editar fondo'),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.image, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('Editar fondo'),
+                                ],
+                              ),
                             ),
                             PopupMenuItem<String>(
                               value: 'configuracion',
-                              child: Text('Configuración'),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.settings, size: 20),
+                                  SizedBox(width: 8),
+                                  Text('Configuración'),
+                                ],
+                              ),
                             ),
                             PopupMenuItem<String>(
                               value: 'eliminar',
-                              child: Text('Eliminar'),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete,
+                                    size: 20,
+                                    color: Colors.red,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text('Eliminar'),
+                                ],
+                              ),
                             ),
                           ],
                         );

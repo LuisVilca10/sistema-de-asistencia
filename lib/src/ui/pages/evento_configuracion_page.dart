@@ -9,7 +9,7 @@ import 'package:flutter_application_1/src/ui/pages/RuletaPage.dart';
 
 Future<void> descargarCSV(BuildContext context, String eventoId) async {
   final url = Uri.parse(
-    'http://192.168.27.201/sis-asis/eventos.php?exportar_asistentes=1&evento_id=$eventoId',
+    'http://localhost/sis-asis/eventos.php?exportar_asistentes=1&evento_id=$eventoId',
   );
 
   // Verifica permisos para Android < 13
@@ -81,11 +81,14 @@ class EventoConfiguracionPage extends StatelessWidget {
               label: Text('Sorteo'),
               onPressed: () {
                 Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (_) => RuletaPage(eventoId: int.parse(evento['id'].toString())),
-  ),
-);
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (_) => RuletaPage(
+                          eventoId: int.parse(evento['id'].toString()),
+                        ),
+                  ),
+                );
               },
             ),
             SizedBox(height: 20), // Espacio entre botones

@@ -24,7 +24,7 @@ class EventoApi {
       }
 
       final response = await _dio.post(
-        "http://192.168.27.201/sis-asis/eventos.php",
+        "http://localhost/sis-asis/eventos.php",
         data: {
           "nombre": nombre,
           "imagen": imagen,
@@ -53,7 +53,7 @@ class EventoApi {
 
     try {
       final response = await _dio.get(
-        "http://192.168.27.201/sis-asis/eventos.php",
+        "http://localhost/sis-asis/eventos.php",
         options: Options(headers: {"Authorization": "Bearer $token"}),
       );
 
@@ -69,7 +69,7 @@ class EventoApi {
 
     try {
       final response = await _dio.delete(
-        "http://192.168.27.201/sis-asis/eventos.php?id=$id", // ← aquí el id en la URL
+        "http://localhost/sis-asis/eventos.php?id=$id", // ← aquí el id en la URL
         options: Options(
           headers: {
             "Authorization": "Bearer $token",
@@ -92,7 +92,7 @@ class EventoApi {
 
     try {
       final response = await _dio.put(
-        "http://192.168.27.201/sis-asis/eventos.php",
+        "http://localhost/sis-asis/eventos.php",
         data: {
           "id": id,
           "nombre": nuevoNombre, // <- CAMBIO AQUÍ
@@ -120,7 +120,7 @@ class EventoApi {
 
     try {
       final response = await _dio.put(
-        "http://192.168.27.201/sis-asis/eventos.php",
+        "http://localhost/sis-asis/eventos.php",
         data: {"id": id, "imagen": base64Image},
         options: Options(
           headers: {
@@ -136,27 +136,26 @@ class EventoApi {
     }
   }
 
-Future<List<Map<String, dynamic>>> listarAsistentesPorEvento(int eventoId) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString("token");
+  Future<List<Map<String, dynamic>>> listarAsistentesPorEvento(
+    int eventoId,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
 
-  try {
-    final response = await _dio.get(
-      "http://192.168.27.201/sis-asis/asistentes.php?evento_id=$eventoId",
-      options: Options(headers: {
-        "Authorization": "Bearer $token",
-      }),
-    );
+    try {
+      final response = await _dio.get(
+        "http://localhost/sis-asis/asistentes.php?evento_id=$eventoId",
+        options: Options(headers: {"Authorization": "Bearer $token"}),
+      );
 
-    if (response.statusCode == 200 && response.data["success"] == true) {
-      return List<Map<String, dynamic>>.from(response.data["asistentes"]);
-    } else {
+      if (response.statusCode == 200 && response.data["success"] == true) {
+        return List<Map<String, dynamic>>.from(response.data["asistentes"]);
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error al listar asistentes: $e");
       return [];
     }
-  } catch (e) {
-    print("Error al listar asistentes: $e");
-    return [];
   }
-}
-
 }

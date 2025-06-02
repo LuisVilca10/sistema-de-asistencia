@@ -11,6 +11,7 @@ class EventoApi {
     required String fechaFin,
     required double latitud,
     required double longitud,
+    required double radio,
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -30,8 +31,9 @@ class EventoApi {
           "imagen": imagen,
           "fecha_inicio": fechaInicio,
           "fecha_fin": fechaFin,
-          "latitud": latitud,
-          "longitud": longitud,
+          'latitud': latitud.toString(),
+          'longitud': longitud.toString(),
+          'radio': radio.toString(),
         },
         options: Options(
           headers: {

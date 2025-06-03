@@ -30,7 +30,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
     final hora = DateFormat('HH:mm:ss').format(now);
 
     final urlCheck = Uri.parse(
-      'http://localhost/sis-asis/verificar_usuario.php?dni=$dni',
+      'https://prueba.metodica.pe/sis-asis/verificar_usuario.php?dni=$dni',
     );
     final checkRes = await http.get(urlCheck);
 
@@ -43,7 +43,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
 
         // ✅ Verificar si ya marcó asistencia hoy
         final checkAsistenciaUrl = Uri.parse(
-          'http://localhost/sis-asis/verificar_asistencia.php?dni=$dni&evento_id=$idEvento&fecha=$fecha',
+          'https://prueba.metodica.pe/sis-asis/verificar_asistencia.php?dni=$dni&evento_id=$idEvento&fecha=$fecha',
         );
         final checkAsistenciaRes = await http.get(checkAsistenciaUrl);
         final yaAsistio =
@@ -121,7 +121,9 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
     String fecha,
     String hora,
   ) async {
-    final url = Uri.parse('http://localhost/sis-asis/registrar_asistencia.php');
+    final url = Uri.parse(
+      'https://prueba.metodica.pe/sis-asis/registrar_asistencia.php',
+    );
     await http.post(
       url,
       body: {
@@ -140,7 +142,9 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
 
     if (dni.isEmpty || nombre.isEmpty) return;
 
-    final url = Uri.parse('http://localhost/sis-asis/registrar_usuario.php');
+    final url = Uri.parse(
+      'https://prueba.metodica.pe/sis-asis/registrar_usuario.php',
+    );
     final res = await http.post(
       url,
       body: {'dni': dni, 'le': dni, 'nombres': nombre},
@@ -167,7 +171,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
 
   Future<void> obtenerUltimasAsistencias(String dni) async {
     final url = Uri.parse(
-      'http://localhost/sis-asis/ultimas_asistencias.php?dni=$dni',
+      'https://prueba.metodica.pe/sis-asis/ultimas_asistencias.php?dni=$dni',
     );
     final res = await http.get(url);
 
@@ -187,7 +191,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
     final idEvento = int.tryParse(widget.evento['id'].toString()) ?? 0;
 
     final url = Uri.parse(
-      'http://localhost/sis-asis/asistencias_por_evento.php?evento_id=$idEvento',
+      'https://prueba.metodica.pe/sis-asis/asistencias_por_evento.php?evento_id=$idEvento',
     );
     final res = await http.get(url);
     print("🟢 Respuesta del backend: ${res.body}");

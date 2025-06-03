@@ -614,7 +614,7 @@ class _BodyState extends State<_Body> {
                         (evento["imagen"] != null &&
                                 evento["imagen"].toString().isNotEmpty)
                             ? NetworkImage(
-                              "http://localhost/sis-asis/${evento["imagen"]}?v=${DateTime.now().millisecondsSinceEpoch}",
+                              "https://prueba.metodica.pe/sis-asis/${evento["imagen"]}?v=${DateTime.now().millisecondsSinceEpoch}",
                             )
                             : const AssetImage("assets/evento.jpg")
                                 as ImageProvider,

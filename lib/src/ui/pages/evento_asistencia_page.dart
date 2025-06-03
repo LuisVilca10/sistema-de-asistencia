@@ -295,7 +295,8 @@ class _BarcodeScannerPageState extends State<BarcodeScannerPage> {
       body:
           _permissionGranted
               ? MobileScanner(
-                onDetect: (barcode, args) {
+                onDetect: (BarcodeCapture capture) {
+                  final barcode = capture.barcodes.first;
                   final code = barcode.rawValue ?? '';
                   if (code.isNotEmpty && !_isScanned) {
                     _isScanned = true; // 👈 Bloquea más lecturas

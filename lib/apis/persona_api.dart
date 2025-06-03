@@ -10,7 +10,7 @@ class PersonaApi {
   }) async {
     try {
       final response = await _dio.post(
-        "http://localhost/sis-asis/auth.php", // Cambia esto
+        "https://prueba.metodica.pe/sis-asis/auth.php", // Cambia esto
         data: {"nombre": nombre, "correo": correo, "dni": dni},
       );
 

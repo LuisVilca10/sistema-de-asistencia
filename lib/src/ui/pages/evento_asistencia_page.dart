@@ -30,7 +30,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
     final hora = DateFormat('HH:mm:ss').format(now);
 
     final urlCheck = Uri.parse(
-      'http://localhost/sis-asis/verificar_usuario.php?dni=$dni',
+      'https://prueba.metodica.pe/sis-asis/verificar_usuario.php?dni=$dni',
     );
     final checkRes = await http.get(urlCheck);
 
@@ -43,7 +43,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
 
         // ✅ Verificar si ya marcó asistencia hoy
         final checkAsistenciaUrl = Uri.parse(
-          'http://localhost/sis-asis/verificar_asistencia.php?dni=$dni&evento_id=$idEvento&fecha=$fecha',
+          'https://prueba.metodica.pe/sis-asis/verificar_asistencia.php?dni=$dni&evento_id=$idEvento&fecha=$fecha',
         );
         final checkAsistenciaRes = await http.get(checkAsistenciaUrl);
         final yaAsistio =
@@ -102,6 +102,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
 
         Future.delayed(const Duration(seconds: 2), () {
           if (Navigator.canPop(context)) Navigator.pop(context);
+          obtenerAsistenciasDelEvento();
         });
       } else {
         setState(() {
@@ -120,7 +121,9 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
     String fecha,
     String hora,
   ) async {
-    final url = Uri.parse('http://localhost/sis-asis/registrar_asistencia.php');
+    final url = Uri.parse(
+      'https://prueba.metodica.pe/sis-asis/registrar_asistencia.php',
+    );
     await http.post(
       url,
       body: {
@@ -139,7 +142,9 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
 
     if (dni.isEmpty || nombre.isEmpty) return;
 
-    final url = Uri.parse('http://localhost/sis-asis/registrar_usuario.php');
+    final url = Uri.parse(
+      'https://prueba.metodica.pe/sis-asis/registrar_usuario.php',
+    );
     final res = await http.post(
       url,
       body: {'dni': dni, 'le': dni, 'nombres': nombre},
@@ -166,7 +171,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
 
   Future<void> obtenerUltimasAsistencias(String dni) async {
     final url = Uri.parse(
-      'http://localhost/sis-asis/ultimas_asistencias.php?dni=$dni',
+      'https://prueba.metodica.pe/sis-asis/ultimas_asistencias.php?dni=$dni',
     );
     final res = await http.get(url);
 
@@ -178,6 +183,39 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
         );
       });
     }
+  }
+
+  List<Map<String, dynamic>> asistenciasEvento = [];
+
+  Future<void> obtenerAsistenciasDelEvento() async {
+    final idEvento = int.tryParse(widget.evento['id'].toString()) ?? 0;
+
+    final url = Uri.parse(
+      'https://prueba.metodica.pe/sis-asis/asistencias_por_evento.php?evento_id=$idEvento',
+    );
+    final res = await http.get(url);
+    print("🟢 Respuesta del backend: ${res.body}");
+
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      if (data['success'] == true) {
+        setState(() {
+          asistenciasEvento = List<Map<String, dynamic>>.from(
+            data['asistentes'] ?? [],
+          );
+        });
+      } else {
+        print("⚠️ Error en la respuesta: ${data['message']}");
+      }
+    } else {
+      print("❌ Error HTTP: ${res.statusCode}");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    obtenerAsistenciasDelEvento();
   }
 
   @override
@@ -215,21 +253,7 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
                   child: const Text('Asistencia'),
                 ),
               ),
-
-              if (ultimaAsistencia != null) ...[
-                const SizedBox(height: 24),
-                const Text(
-                  'Último registro:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "👤 ${ultimaAsistencia!['nombre']} (${ultimaAsistencia!['dni']})",
-                ),
-                Text(
-                  "🕒 ${ultimaAsistencia!['hora']} - 📅 ${ultimaAsistencia!['fecha']}",
-                ),
-              ],
-
+              const SizedBox(height: 20),
               // ✅ Registro nuevo usuario
               if (usuarioNoExiste) ...[
                 const SizedBox(height: 20),
@@ -246,6 +270,28 @@ class _EventoAsistenciaPageState extends State<EventoAsistenciaPage> {
                   child: const Text('Registrar nuevo usuario'),
                 ),
               ],
+              const SizedBox(height: 20),
+              const Text(
+                '📋 Lista de Asistencias:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: asistenciasEvento.length,
+                itemBuilder: (context, index) {
+                  final a = asistenciasEvento[index];
+                  return Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.person),
+                      title: Text(a['nombres']),
+                      subtitle: Text(
+                        "DNI: ${a['dni']} — ${a['fecha']} ${a['hora']}",
+                      ),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),

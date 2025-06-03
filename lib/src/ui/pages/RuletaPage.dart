@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/apis/evento_api.dart';
 import 'package:audioplayers/audioplayers.dart';
 
-
 class RuletaPage extends StatefulWidget {
   final int eventoId;
 
@@ -20,6 +19,7 @@ class _RuletaPageState extends State<RuletaPage> with TickerProviderStateMixin {
   Animation<double>? _animation;
 
   List<Map<String, dynamic>> asistentes = [];
+  bool isLoading = true;
   double currentAngle = 0;
   bool _dialogShown = false;
   final _random = Random();
@@ -36,12 +36,14 @@ class _RuletaPageState extends State<RuletaPage> with TickerProviderStateMixin {
       duration: Duration(seconds: 20),
     )..repeat();
 
-    _idleAnimation = Tween<double>(begin: 0, end: 2 * pi).animate(_idleController)
-      ..addListener(() {
-        setState(() {
-          currentAngle = _idleAnimation.value % (2 * pi);
-        });
+    _idleAnimation = Tween<double>(
+      begin: 0,
+      end: 2 * pi,
+    ).animate(_idleController)..addListener(() {
+      setState(() {
+        currentAngle = _idleAnimation.value % (2 * pi);
       });
+    });
 
     _mainController = AnimationController(
       vsync: this,
@@ -50,14 +52,23 @@ class _RuletaPageState extends State<RuletaPage> with TickerProviderStateMixin {
   }
 
   Future<void> _fetchAsistentes() async {
-    final data = await EventoApi().listarAsistentesPorEvento(widget.eventoId);
     setState(() {
-      asistentes = data
-          .map((e) => {
-                'dni': e['dni'].toString(),
-                'nombre': e['nombre'] ?? 'Sin Nombre',
-              })
-          .toList();
+      isLoading = true;
+    });
+
+    final data = await EventoApi().listarAsistentesPorEvento(widget.eventoId);
+
+    setState(() {
+      asistentes =
+          data
+              .map(
+                (e) => {
+                  'dni': e['dni'].toString(),
+                  'nombre': e['nombre'] ?? 'Sin Nombre',
+                },
+              )
+              .toList();
+      isLoading = false;
     });
   }
 
@@ -74,26 +85,31 @@ class _RuletaPageState extends State<RuletaPage> with TickerProviderStateMixin {
     final anguloFinal = _random.nextDouble() * 2 * pi;
     final anguloTotal = vueltas * 2 * pi + anguloFinal;
 
-    _animation = Tween<double>(
-      begin: currentAngle,
-      end: currentAngle + anguloTotal,
-    ).animate(CurvedAnimation(
-      parent: _mainController,
-      curve: Curves.easeOutCubic,
-    ))
-      ..addListener(() {
-        setState(() {
-          currentAngle = _animation!.value;
-        });
-      })
-      ..addStatusListener((status) {
-        if (status == AnimationStatus.completed && !_dialogShown && mounted) {
-          _dialogShown = true;
-          player.stop(); // Detener el sonido cuando termina el giro
-          final ganador = _obtenerGanador();
-          _mostrarGanador(ganador);
-        }
-      });
+    _animation =
+        Tween<double>(
+            begin: currentAngle,
+            end: currentAngle + anguloTotal,
+          ).animate(
+            CurvedAnimation(
+              parent: _mainController,
+              curve: Curves.easeOutCubic,
+            ),
+          )
+          ..addListener(() {
+            setState(() {
+              currentAngle = _animation!.value;
+            });
+          })
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed &&
+                !_dialogShown &&
+                mounted) {
+              _dialogShown = true;
+              player.stop(); // Detener el sonido cuando termina el giro
+              final ganador = _obtenerGanador();
+              _mostrarGanador(ganador);
+            }
+          });
 
     _mainController.reset();
     _mainController.forward();
@@ -107,7 +123,8 @@ class _RuletaPageState extends State<RuletaPage> with TickerProviderStateMixin {
     if (adjustedAngle < 0) adjustedAngle += 2 * pi;
 
     int index =
-        ((2 * pi - adjustedAngle) / anglePerSegment).floor() % asistentes.length;
+        ((2 * pi - adjustedAngle) / anglePerSegment).floor() %
+        asistentes.length;
 
     return asistentes[index];
   }
@@ -116,26 +133,27 @@ class _RuletaPageState extends State<RuletaPage> with TickerProviderStateMixin {
     showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        title: Text("🎉 Ganador"),
-        content: Text("El ganador es:\n${ganador['nombre']}"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text("Cerrar"),
+      builder:
+          (BuildContext dialogContext) => AlertDialog(
+            title: Text("🎉 Ganador"),
+            content: Text("El ganador es:\n${ganador['nombre']}"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text("Cerrar"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  setState(() {
+                    currentAngle = 0;
+                  });
+                  _idleController.repeat();
+                },
+                child: Text("Nuevo Sorteo"),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              setState(() {
-                currentAngle = 0;
-              });
-              _idleController.repeat();
-            },
-            child: Text("Nuevo Sorteo"),
-          ),
-        ],
-      ),
     );
   }
 
@@ -157,65 +175,88 @@ class _RuletaPageState extends State<RuletaPage> with TickerProviderStateMixin {
         foregroundColor: Colors.white,
       ),
       body: Center(
-        child: asistentes.isEmpty
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Cargando participantes...'),
-                ],
-              )
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Participantes: ${asistentes.length}',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20),
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Transform.rotate(
-                        angle: currentAngle,
-                        child: CustomPaint(
-                          size: Size(size, size),
-                          painter: RuletaPainter(asistentes),
-                        ),
-                      ),
-                      Positioned(
-                        top: size * 0.02,
-                        child: Icon(Icons.arrow_drop_down, size: 40),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton.icon(
-                    icon: Icon(Icons.casino),
-                    label: Text('Girar Ruleta'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          _mainController.isAnimating ? Colors.grey : Colors.blue[700],
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      textStyle: TextStyle(fontSize: 16),
-                    ),
-                    onPressed: _mainController.isAnimating ? null : _girarRuleta,
-                  ),
-                  if (_mainController.isAnimating) ...[
+        child:
+            isLoading
+                ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
                     SizedBox(height: 16),
-                    Text(
-                      '¡Girando...!',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.blue[700],
-                      ),
-                    ),
+                    Text('Cargando participantes...'),
                   ],
-                ],
-              ),
+                )
+                : (asistentes.isEmpty
+                    ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.info_outline, size: 50, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text(
+                          'No hay participantes registrados para este evento.',
+                          style: TextStyle(fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    )
+                    : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Participantes: ${asistentes.length}',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Transform.rotate(
+                              angle: currentAngle,
+                              child: CustomPaint(
+                                size: Size(size, size),
+                                painter: RuletaPainter(asistentes),
+                              ),
+                            ),
+                            Positioned(
+                              top: size * 0.02,
+                              child: Icon(Icons.arrow_drop_down, size: 40),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 30),
+                        ElevatedButton.icon(
+                          icon: Icon(Icons.casino),
+                          label: Text('Girar Ruleta'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                _mainController.isAnimating
+                                    ? Colors.grey
+                                    : Colors.blue[700],
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            textStyle: TextStyle(fontSize: 16),
+                          ),
+                          onPressed:
+                              _mainController.isAnimating ? null : _girarRuleta,
+                        ),
+                        if (_mainController.isAnimating) ...[
+                          SizedBox(height: 16),
+                          Text(
+                            '¡Girando...!',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontStyle: FontStyle.italic,
+                              color: Colors.blue[700],
+                            ),
+                          ),
+                        ],
+                      ],
+                    )),
       ),
     );
   }
@@ -234,16 +275,25 @@ class RuletaPainter extends CustomPainter {
     final radius = size.width / 2;
     final center = Offset(radius, radius);
     final anglePerSegment = 2 * pi / asistentes.length;
-    final textPainter = TextPainter(textAlign: TextAlign.center, textDirection: TextDirection.ltr);
+    final textPainter = TextPainter(
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
 
     for (int i = 0; i < asistentes.length; i++) {
       final startAngle = -pi / 4 + (i * anglePerSegment);
       paint.color = Colors.primaries[i % Colors.primaries.length].shade300;
 
-      final path = Path()
-        ..moveTo(center.dx, center.dy)
-        ..arcTo(Rect.fromCircle(center: center, radius: radius), startAngle, anglePerSegment, false)
-        ..close();
+      final path =
+          Path()
+            ..moveTo(center.dx, center.dy)
+            ..arcTo(
+              Rect.fromCircle(center: center, radius: radius),
+              startAngle,
+              anglePerSegment,
+              false,
+            )
+            ..close();
 
       canvas.drawPath(path, paint);
 
@@ -261,7 +311,10 @@ class RuletaPainter extends CustomPainter {
       canvas.save();
       canvas.translate(textOffset.dx, textOffset.dy);
       canvas.rotate(textAngle);
-      textPainter.paint(canvas, Offset(-textPainter.width / 2, -textPainter.height / 2));
+      textPainter.paint(
+        canvas,
+        Offset(-textPainter.width / 2, -textPainter.height / 2),
+      );
       canvas.restore();
     }
   }

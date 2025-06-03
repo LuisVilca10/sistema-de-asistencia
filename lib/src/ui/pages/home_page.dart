@@ -1,7 +1,10 @@
 import 'dart:ui';
+import 'package:flutter_application_1/src/ui/pages/MapaSelectorPage.dart';
+import 'package:flutter_application_1/src/ui/pages/RuletaPage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/apis/evento_api.dart';
@@ -191,7 +194,7 @@ class _HomePageState extends State<HomePage>
                                   Icons.delete,
                                   'Eliminar',
                                   'Elimina el módulo o evento permanentemente.',
-                                ),                               
+                                ),
                               ],
                             ),
                           ),
@@ -251,7 +254,8 @@ Future<void> _dialogBuilder(
   // Variables para la ubicación
   double? latitud;
   double? longitud;
-
+  LatLng? selectedUbicacion;
+  double? radio;
   // Verifica que el GPS esté activado y se tengan permisos
   bool gpsActivo = await Geolocator.isLocationServiceEnabled();
   if (!gpsActivo) {
@@ -289,209 +293,244 @@ Future<void> _dialogBuilder(
   return showDialog<void>(
     context: context,
     builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: ThemeController.instance.background(),
-        title: const Text('Crear Nuevo'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            // Nombre del evento
-            TextField(
-              controller: nombreController,
-              cursorColor: Colors.black54,
-              decoration: InputDecoration(
-                labelText: "Nombre del evento",
-                labelStyle: TextStyle(color: Colors.black54),
-                border: OutlineInputBorder(),
-                hintStyle: TextStyle(color: Colors.grey),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: ThemeController.instance.background(),
+            title: const Text('Crear Nuevo'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextField(
+                  controller: nombreController,
+                  cursorColor: Colors.black54,
+                  decoration: InputDecoration(
+                    labelText: "Nombre del evento",
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-            ),
-            SizedBox(height: 10),
-
-            // Fecha y hora de inicio
-            TextField(
-              controller: fechaHoraInicioController,
-              readOnly: true,
-              cursorColor: Colors.black54,
-              decoration: InputDecoration(
-                labelText: "Fecha y Hora de Inicio",
-                labelStyle: TextStyle(color: Colors.black54),
-                border: OutlineInputBorder(),
-                hintStyle: TextStyle(color: Colors.grey),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
-                ),
-              ),
-              onTap: () async {
-                DateTime? selectedDate = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2101),
-                );
-                if (selectedDate != null) {
-                  TimeOfDay? selectedTime = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  );
-                  if (selectedTime != null) {
-                    final dateTime = DateTime(
-                      selectedDate.year,
-                      selectedDate.month,
-                      selectedDate.day,
-                      selectedTime.hour,
-                      selectedTime.minute,
+                SizedBox(height: 10),
+                TextField(
+                  controller: fechaHoraInicioController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "Fecha y Hora de Inicio",
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () async {
+                    DateTime? fecha = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
                     );
-                    fechaHoraInicioController.text = dateTime
-                        .toString()
-                        .substring(0, 16); // yyyy-MM-dd HH:mm
-                  }
-                }
-              },
-            ),
-            SizedBox(height: 10),
-
-            // Fecha y hora de fin
-            TextField(
-              controller: fechaHoraFinController,
-              readOnly: true,
-              cursorColor: Colors.black54,
-              decoration: InputDecoration(
-                labelText: "Fecha y Hora de Fin",
-                labelStyle: TextStyle(color: Colors.black54),
-                border: OutlineInputBorder(),
-                hintStyle: TextStyle(color: Colors.grey),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.blue),
+                    if (fecha != null) {
+                      TimeOfDay? hora = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (hora != null) {
+                        final dateTime = DateTime(
+                          fecha.year,
+                          fecha.month,
+                          fecha.day,
+                          hora.hour,
+                          hora.minute,
+                        );
+                        fechaHoraInicioController.text = dateTime
+                            .toString()
+                            .substring(0, 16);
+                      }
+                    }
+                  },
                 ),
-              ),
-              onTap: () async {
-                DateTime? selectedDate = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2101),
-                );
-                if (selectedDate != null) {
-                  TimeOfDay? selectedTime = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.now(),
-                  );
-                  if (selectedTime != null) {
-                    final dateTime = DateTime(
-                      selectedDate.year,
-                      selectedDate.month,
-                      selectedDate.day,
-                      selectedTime.hour,
-                      selectedTime.minute,
+                SizedBox(height: 10),
+                TextField(
+                  controller: fechaHoraFinController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: "Fecha y Hora de Fin",
+                    border: OutlineInputBorder(),
+                  ),
+                  onTap: () async {
+                    DateTime? fecha = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2101),
                     );
-                    fechaHoraFinController.text = dateTime.toString().substring(
-                      0,
-                      16,
-                    ); // yyyy-MM-dd HH:mm
-                  }
-                }
-              },
-            ),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            style: TextButton.styleFrom(
-              textStyle: Theme.of(context).textTheme.labelLarge,
-            ),
-            child: const Text('Cancelar'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              textStyle: Theme.of(context).textTheme.labelLarge,
-            ),
-            child: const Text('Crear'),
-            onPressed: () async {
-              String nombre = nombreController.text;
-              String fechaHoraInicio = fechaHoraInicioController.text;
-              String fechaHoraFin = fechaHoraFinController.text;
-
-              // Verificar si la latitud y longitud están disponibles
-              if (nombre.isEmpty ||
-                  fechaHoraInicio.isEmpty ||
-                  fechaHoraFin.isEmpty ||
-                  latitud == null ||
-                  longitud == null) {
-                // Mostrar error con SweetAlert, SnackBar o similar
-                return;
-              } else {
-                // Aquí ya puedes hacer el POST a la API con todos los datos
-                print("Evento: $nombre");
-                print("Inicio: $fechaHoraInicio");
-                print("Fin: $fechaHoraFin");
-                print("Latitud: $latitud, Longitud: $longitud");
-
-                final respuesta = await EventoApi().crearEvento(
-                  nombre: nombre,
-                  fechaInicio: fechaHoraInicio,
-                  fechaFin: fechaHoraFin,
-                  latitud: latitud,
-                  longitud: longitud,
-                );
-                if (respuesta["success"] == true || respuesta["status"] == 1) {
-                  Navigator.pop(context); // Cierra el primer diálogo
-
-                  // Muestra el segundo diálogo de éxito
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext innerContext) {
-                      // Usamos innerContext para referenciar este diálogo
-                      // Este contexto es clave para cerrarlo luego
-                      Future.delayed(const Duration(seconds: 2), () {
-                        Navigator.pop(innerContext); // Cierra este diálogo
-                        onEventoCreado(); // Actualiza la lista
+                    if (fecha != null) {
+                      TimeOfDay? hora = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                      );
+                      if (hora != null) {
+                        final dateTime = DateTime(
+                          fecha.year,
+                          fecha.month,
+                          fecha.day,
+                          hora.hour,
+                          hora.minute,
+                        );
+                        fechaHoraFinController.text = dateTime
+                            .toString()
+                            .substring(0, 16);
+                      }
+                    }
+                  },
+                ),
+                SizedBox(height: 10),
+                InkWell(
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => OSMMapaSelectorPage(
+                              latitud: latitud!,
+                              longitud: longitud!,
+                            ),
+                      ),
+                    );
+                    if (result != null) {
+                      setState(() {
+                        selectedUbicacion = LatLng(
+                          result['latitud'],
+                          result['longitud'],
+                        );
+                        radio = result['radio'];
                       });
-
-                      return AlertDialog(
-                        title: const Text('✅ Evento creado'),
-                        content: const Text(
-                          'El evento se ha registrado correctamente.',
+                      print("📍 Latitud: ${selectedUbicacion!.latitude}");
+                      print("📍 Longitud: ${selectedUbicacion!.longitude}");
+                      print("📏 Radio: ${radio!} metros");
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
+                    margin: const EdgeInsets.only(top: 10),
+                    decoration: BoxDecoration(
+                      color:
+                          selectedUbicacion == null
+                              ? Colors.grey[100]
+                              : Colors.green[50],
+                      border: Border.all(
+                        color:
+                            selectedUbicacion == null
+                                ? Colors.grey
+                                : Colors.green,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
                         ),
-                      );
-                    },
-                  );
-                } else {
-                  // Si la respuesta es null o no contiene el status esperado
-                  print(
-                    "Error al crear evento: ${respuesta?["message"] ?? "Respuesta inesperada"}",
-                  );
-
-                  // Aquí podrías mostrar un mensaje de error con un diálogo o Snackbar
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Error'),
-                        content: const Text(
-                          'Hubo un problema al crear el evento. Por favor, inténtalo nuevamente.',
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color:
+                              selectedUbicacion == null
+                                  ? Colors.grey
+                                  : Colors.green,
+                          size: 28,
                         ),
-                        actions: <Widget>[
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('Cerrar'),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Ubicación del evento",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                selectedUbicacion == null
+                                    ? "Toca para seleccionar en el mapa"
+                                    : "📍 ${selectedUbicacion!.latitude.toStringAsFixed(4)}, ${selectedUbicacion!.longitude.toStringAsFixed(4)}\n📏 Radio: ${radio!.toStringAsFixed(0)} m",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      );
-                    },
+                        ),
+                        const Icon(Icons.chevron_right),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                child: Text('Cancelar'),
+                onPressed: () => Navigator.pop(context),
+              ),
+              TextButton(
+                child: Text('Crear'),
+                onPressed: () async {
+                  String nombre = nombreController.text;
+                  String inicio = fechaHoraInicioController.text;
+                  String fin = fechaHoraFinController.text;
+
+                  if (nombre.isEmpty ||
+                      inicio.isEmpty ||
+                      fin.isEmpty ||
+                      selectedUbicacion == null ||
+                      radio == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Completa todos los campos"),
+                      ),
+                    );
+                    return;
+                  }
+                  final respuesta = await EventoApi().crearEvento(
+                    nombre: nombre,
+                    fechaInicio: inicio,
+                    fechaFin: fin,
+                    latitud: selectedUbicacion!.latitude,
+                    longitud: selectedUbicacion!.longitude,
+                    radio: radio!,
                   );
-                }
-              }
-            },
-          ),
-        ],
+                  if (respuesta["success"] == true ||
+                      respuesta["status"] == 1) {
+                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext innerContext) {
+                        Future.delayed(Duration(seconds: 2), () {
+                          Navigator.pop(innerContext);
+                          onEventoCreado();
+                        });
+                        return const AlertDialog(
+                          title: Text('✅ Evento creado'),
+                          content: Text(
+                            'El evento se ha registrado correctamente.',
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+              ),
+            ],
+          );
+        },
       );
     },
   );
@@ -575,7 +614,7 @@ class _BodyState extends State<_Body> {
                         (evento["imagen"] != null &&
                                 evento["imagen"].toString().isNotEmpty)
                             ? NetworkImage(
-                              "http://localhost/sis-asis/${evento["imagen"]}?v=${DateTime.now().millisecondsSinceEpoch}",
+                              "https://prueba.metodica.pe/sis-asis/${evento["imagen"]}?v=${DateTime.now().millisecondsSinceEpoch}",
                             )
                             : const AssetImage("assets/evento.jpg")
                                 as ImageProvider,
@@ -687,15 +726,30 @@ class _BodyState extends State<_Body> {
                               ),
                             ),
                             PopupMenuItem<String>(
-                              value: 'configuracion',
+                              value: 'sorteo',
                               child: Row(
                                 children: [
-                                  Icon(Icons.settings, size: 20),
+                                  Icon(
+                                    Icons.casino,
+                                    size: 20,
+                                    color: Colors.deepPurple,
+                                  ),
                                   SizedBox(width: 8),
-                                  Text('Configuración'),
+                                  Text('Sorteo'),
                                 ],
                               ),
                             ),
+
+                            // PopupMenuItem<String>(
+                            //   value: 'configuracion',
+                            //   child: Row(
+                            //     children: [
+                            //       Icon(Icons.settings, size: 20),
+                            //       SizedBox(width: 8),
+                            //       Text('Configuración'),
+                            //     ],
+                            //   ),
+                            // ),
                             PopupMenuItem<String>(
                               value: 'eliminar',
                               child: Row(
@@ -798,16 +852,29 @@ class _BodyState extends State<_Body> {
                               );
                             }
                           }
-                        } else if (selected == 'configuracion') {
+                        } else if (selected == 'sorteo') {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder:
-                                  (_) =>
-                                      EventoConfiguracionPage(evento: evento),
+                                  (_) => RuletaPage(
+                                    eventoId: int.parse(
+                                      evento['id'].toString(),
+                                    ),
+                                  ),
                             ),
                           );
                         }
+                        // else if (selected == 'configuracion') {
+                        //   Navigator.push(
+                        //     context,
+                        //     MaterialPageRoute(
+                        //       builder:
+                        //           (_) =>
+                        //               EventoConfiguracionPage(evento: evento),
+                        //     ),
+                        //   );
+                        // }
                       },
                       child: Container(
                         padding: const EdgeInsets.all(8),

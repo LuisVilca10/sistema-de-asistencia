@@ -9,7 +9,7 @@ import 'package:flutter_application_1/src/ui/pages/RuletaPage.dart';
 
 Future<void> descargarCSV(BuildContext context, String eventoId) async {
   final url = Uri.parse(
-    'http://localhost/sis-asis/eventos.php?exportar_asistentes=1&evento_id=$eventoId',
+    'https://prueba.metodica.pe/sis-asis/eventos.php?exportar_asistentes=1&evento_id=$eventoId',
   );
 
   // Verifica permisos para Android < 13

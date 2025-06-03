@@ -11,6 +11,7 @@ class EventoApi {
     required String fechaFin,
     required double latitud,
     required double longitud,
+    required double radio,
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -24,14 +25,15 @@ class EventoApi {
       }
 
       final response = await _dio.post(
-        "http://localhost/sis-asis/eventos.php",
+        "https://prueba.metodica.pe/sis-asis/eventos.php",
         data: {
           "nombre": nombre,
           "imagen": imagen,
           "fecha_inicio": fechaInicio,
           "fecha_fin": fechaFin,
-          "latitud": latitud,
-          "longitud": longitud,
+          'latitud': latitud.toString(),
+          'longitud': longitud.toString(),
+          'radio': radio.toString(),
         },
         options: Options(
           headers: {
@@ -53,7 +55,7 @@ class EventoApi {
 
     try {
       final response = await _dio.get(
-        "http://localhost/sis-asis/eventos.php",
+        "https://prueba.metodica.pe/sis-asis/eventos.php",
         options: Options(headers: {"Authorization": "Bearer $token"}),
       );
 
@@ -69,7 +71,7 @@ class EventoApi {
 
     try {
       final response = await _dio.delete(
-        "http://localhost/sis-asis/eventos.php?id=$id", // ← aquí el id en la URL
+        "https://prueba.metodica.pe/sis-asis/eventos.php?id=$id", // ← aquí el id en la URL
         options: Options(
           headers: {
             "Authorization": "Bearer $token",
@@ -92,7 +94,7 @@ class EventoApi {
 
     try {
       final response = await _dio.put(
-        "http://localhost/sis-asis/eventos.php",
+        "https://prueba.metodica.pe/sis-asis/eventos.php",
         data: {
           "id": id,
           "nombre": nuevoNombre, // <- CAMBIO AQUÍ
@@ -120,7 +122,7 @@ class EventoApi {
 
     try {
       final response = await _dio.put(
-        "http://localhost/sis-asis/eventos.php",
+        "https://prueba.metodica.pe/sis-asis/eventos.php",
         data: {"id": id, "imagen": base64Image},
         options: Options(
           headers: {
@@ -144,7 +146,7 @@ class EventoApi {
 
     try {
       final response = await _dio.get(
-        "http://localhost/sis-asis/asistentes.php?evento_id=$eventoId",
+        "https://prueba.metodica.pe/sis-asis/asistentes.php?evento_id=$eventoId",
         options: Options(headers: {"Authorization": "Bearer $token"}),
       );
 

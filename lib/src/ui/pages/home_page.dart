@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter_application_1/src/ui/pages/MapaSelectorPage.dart';
 import 'package:flutter_application_1/src/ui/pages/RuletaPage.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'dart:convert';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/cupertino.dart';
@@ -11,8 +10,6 @@ import 'package:flutter_application_1/apis/evento_api.dart';
 import 'package:flutter_application_1/src/core/controllers/theme_controller.dart';
 import 'package:flutter_application_1/src/ui/pages/evento_asistencia_page.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_application_1/util/UbicacionUtil.dart';
-import 'package:flutter_application_1/src/ui/pages/evento_configuracion_page.dart';
 import 'package:flutter_application_1/src/ui/pages/acerca_de_page.dart';
 
 GlobalKey<ScaffoldState> homePageKey = GlobalKey<ScaffoldState>();
